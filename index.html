@@ -1,8 +1,7 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <title>Planificateur d'Itinéraire Intelligent & Configurable</title>
+    <title>Planificateur d'Itinéraire IA - Design Amélioré</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -10,52 +9,237 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin=""/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin=""/>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
 
     <style>
-        /* Styles améliorés */
-        html, body { height: 100%; margin: 0; padding: 0; font-family: sans-serif; }
+        /* --- Variables de Couleurs et Design --- */
+        :root {
+            --font-main: 'Inter', sans-serif;
+            --bg-body: #F9FAFB; /* Gris très clair */
+            --bg-sidebar: #FFFFFF;
+            --bg-input: #FFFFFF;
+            --bg-hover-light: #F3F4F6; /* Gris clair pour hover */
+            --bg-selected-light: #D1FAE5; /* Vert très clair pour sélection */
+
+            --text-primary: #1F2937; /* Gris très foncé */
+            --text-secondary: #6B7280; /* Gris moyen */
+            --text-placeholder: #9CA3AF; /* Gris clair */
+            --text-white: #FFFFFF;
+
+            --border-color: #E5E7EB; /* Gris clair pour bordures */
+            --border-focus: var(--color-primary);
+            --border-selected: var(--color-secondary);
+
+            --color-primary: #3B82F6; /* Bleu primaire */
+            --color-primary-dark: #2563EB; /* Bleu primaire foncé (hover) */
+            --color-secondary: #10B981; /* Vert secondaire (succès, sélection) */
+            --color-secondary-dark: #059669; /* Vert secondaire foncé (hover) */
+            --color-danger: #EF4444; /* Rouge pour erreurs */
+            --color-danger-light: #FEE2E2; /* Fond rouge clair pour erreurs */
+            --color-info: #60A5FA; /* Bleu clair pour info */
+            --color-warning: #F59E0B; /* Orange pour avertissements */
+
+            --border-radius: 6px; /* Rayon pour coins arrondis */
+            --box-shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --box-shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+             --spinner-size: 1.2em; /* Taille du spinner */
+        }
+
+        /* --- Styles de Base --- */
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html, body { height: 100%; margin: 0; padding: 0; font-family: var(--font-main); background-color: var(--bg-body); color: var(--text-primary); font-size: 16px; line-height: 1.5; }
+
         #container { display: flex; height: 100%; }
-        #sidebar { width: 400px; padding: 15px; box-sizing: border-box; background-color: #f8f8f8; overflow-y: auto; display: flex; flex-direction: column; border-right: 1px solid #ddd; }
-        #map { flex-grow: 1; height: 100%; background-color: #eee; }
-        label, input, select, button, textarea { display: block; margin-bottom: 10px; width: 100%; box-sizing: border-box; font-size: 0.95em; }
-        textarea { min-height: 80px; resize: vertical; }
-        button { padding: 10px 15px; border: none; cursor: pointer; border-radius: 4px; font-size: 1em; transition: background-color 0.2s; }
-        button:disabled { background-color: #ccc !important; color: #666 !important; cursor: not-allowed; }
-        #planRouteBtn { background-color: #007bff; color: white; }
-        #planRouteBtn:hover:not(:disabled) { background-color: #0056b3; }
-        #calculateSelectedRouteBtn { background-color: #28a745; color: white; margin-top: 10px; }
-        #calculateSelectedRouteBtn:hover:not(:disabled) { background-color: #218838; }
-        #poiPanel, #resultsPanel { border-top: 1px solid #ddd; padding-top: 15px; margin-top: 15px; }
-        #poiFilters label { display: inline-block; margin-right: 10px; font-size: 0.9em; cursor: pointer; }
-        #poiFilters input[type="checkbox"] { width: auto; margin-right: 3px; vertical-align: middle; }
-        #poiList { max-height: 300px; overflow-y: auto; border: 1px solid #eee; margin-top: 5px; padding: 5px; background-color: #fff; }
-        .poi-item { margin-bottom: 5px; cursor: pointer; padding: 6px 8px; border: 1px solid #ccc; border-radius: 3px; font-size: 0.9em; background-color: #fff; transition: background-color 0.1s; }
-        .poi-item:hover { background-color: #e9e9e9; }
-        .poi-item.selected { background-color: #d4edda; border-color: #28a745; font-weight: bold; }
-        #loadMoreBtn { background-color: #6c757d; color: white; font-size: 0.9em; padding: 5px 10px; margin-top: 5px; }
-        #loadMoreBtn:hover:not(:disabled) { background-color: #5a6268; }
-        #showPoiToggle { margin-top: 10px; }
-        #showPoiToggle label { font-size: 0.9em; cursor: pointer; }
-        #showPoiToggle input { width: auto; vertical-align: middle; margin-right: 3px;}
-        #routeInstructions { margin-top: 10px; }
-        #routeInstructions h4 { margin-bottom: 5px;}
-        #routeInstructions ol { padding-left: 20px; font-size: 0.9em; margin: 0; }
-        #routeInstructions li { margin-bottom: 5px; }
-        .error { color: #dc3545; font-weight: bold; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 5px; border-radius: 3px; margin-top: 5px;}
-        .loading { font-style: italic; color: #6c757d; }
-        .success { color: #28a745; font-weight: bold; }
-        .info { color: #0056b3; }
-        /* Attribution OSM */
-        .leaflet-container { font-size: 12px; }
-        /* Style pour Marker Cluster */
-        .marker-cluster-small { background-color: rgba(181, 226, 140, 0.6); }
-        .marker-cluster-small div { background-color: rgba(110, 204, 57, 0.6); }
-        .marker-cluster-medium { background-color: rgba(241, 211, 87, 0.6); }
-        .marker-cluster-medium div { background-color: rgba(240, 194, 12, 0.6); }
-        .marker-cluster-large { background-color: rgba(253, 156, 115, 0.6); }
-        .marker-cluster-large div { background-color: rgba(241, 128, 23, 0.6); }
+
+        /* --- Sidebar --- */
+        #sidebar {
+            width: 450px; /* Légèrement plus large */
+            padding: 20px;
+            background-color: var(--bg-sidebar);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            box-shadow: var(--box-shadow-light);
+            transition: width 0.3s ease; /* Pour future responsivité */
+        }
+        /* Concept responsive :
+        @media (max-width: 768px) { #sidebar { position: fixed; left: -450px; z-index: 1000; height: 100%; } #sidebar.open { left: 0; } } */
+
+        #map { flex-grow: 1; height: 100%; background-color: #E5E7EB; } /* Fond carte plus neutre */
+
+        h3 { font-size: 1.4rem; font-weight: 600; margin-bottom: 20px; color: var(--text-primary); }
+        h4 { font-size: 1.1rem; font-weight: 600; margin-top: 25px; margin-bottom: 15px; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+
+        /* --- Formulaires --- */
+        label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.9rem; color: var(--text-secondary); }
+        input[type="text"], select, textarea {
+            display: block;
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background-color: var(--bg-input);
+            color: var(--text-primary);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        input[type="text"]::placeholder, textarea::placeholder { color: var(--text-placeholder); }
+        input[type="text"]:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); /* Ombre focus bleue */
+        }
+        textarea { min-height: 90px; resize: vertical; }
+        select { appearance: none; /* Style custom flèche si désiré via background-image */ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.7rem center; background-size: 1.25em 1.25em; padding-right: 2.5rem; }
+
+        /* --- Boutons --- */
+        button {
+            display: inline-flex; /* Pour aligner icône et texte */
+            align-items: center;
+            justify-content: center;
+            gap: 8px; /* Espace entre icône et texte */
+            padding: 10px 18px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+            width: 100%; /* Prend toute la largeur par défaut */
+            margin-bottom: 10px; /* Espace par défaut */
+        }
+        button i { font-size: 0.9em; /* Taille icône légèrement plus petite */ }
+
+        #planRouteBtn { background-color: var(--color-primary); color: var(--text-white); }
+        #planRouteBtn:hover:not(:disabled) { background-color: var(--color-primary-dark); box-shadow: var(--box-shadow-light); }
+
+        #calculateSelectedRouteBtn { background-color: var(--color-secondary); color: var(--text-white); margin-top: 15px; }
+        #calculateSelectedRouteBtn:hover:not(:disabled) { background-color: var(--color-secondary-dark); box-shadow: var(--box-shadow-light); }
+
+        #loadMoreBtn { background-color: var(--text-secondary); color: var(--text-white); font-size: 0.9rem; padding: 8px 15px; margin-top: 10px; width: auto; /* Ne prend pas toute la largeur */ }
+        #loadMoreBtn:hover:not(:disabled) { background-color: var(--text-primary); }
+
+        button:disabled {
+            background-color: #D1D5DB !important; /* Gris clair désactivé */
+            color: #9CA3AF !important;
+            cursor: not-allowed;
+            opacity: 0.7;
+            box-shadow: none;
+        }
+         /* Style Spinner pour bouton (à ajouter via JS) */
+        button .spinner { display: none; }
+        button.loading .spinner { display: inline-block; width: var(--spinner-size); height: var(--spinner-size); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: var(--text-white); animation: spin 1s ease-infinite; margin-left: 8px; }
+        button.loading .button-text { /* Optionnel: cacher texte si spinner seul */ }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+
+        /* --- Panneaux POI et Résultats --- */
+        #poiPanel, #resultsPanel { border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 25px; }
+
+        /* --- Filtres POI --- */
+        #poiFilters { display: flex; flex-wrap: wrap; gap: 10px 15px; margin-bottom: 15px; }
+        #poiFilters label { display: inline-flex; align-items: center; margin-right: 0; /* Géré par gap */ font-size: 0.9rem; cursor: pointer; color: var(--text-secondary); }
+        #poiFilters input[type="checkbox"] { width: 1em; height: 1em; margin-right: 6px; vertical-align: middle; accent-color: var(--color-primary); /* Style checkbox natif mais coloré */ }
+        #poiFilters label:hover { color: var(--text-primary); }
+
+        #showPoiToggle { margin-top: 15px; margin-bottom: 10px; }
+        #showPoiToggle label { font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; color: var(--text-secondary); }
+        #showPoiToggle input { width: auto; margin-right: 6px; accent-color: var(--color-primary); }
+
+        /* --- Liste POI --- */
+        #poiList {
+            max-height: 350px; /* Un peu plus de hauteur */
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            margin-top: 10px;
+            padding: 8px; /* Padding intérieur */
+            background-color: var(--bg-input);
+        }
+        .poi-item {
+            margin-bottom: 6px;
+            cursor: pointer;
+            padding: 10px 12px;
+            border: 1px solid transparent; /* Bordure transparente pour garder la taille au survol/select */
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+            background-color: var(--bg-input);
+            transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+            display: flex; /* Pour icône future */
+            justify-content: space-between;
+            align-items: center;
+            line-height: 1.3;
+        }
+        .poi-item:hover { background-color: var(--bg-hover-light); }
+        .poi-item.selected {
+            background-color: var(--bg-selected-light);
+            border-color: var(--border-selected);
+            font-weight: 500; /* Légèrement plus gras */
+            color: var(--color-secondary-dark);
+        }
+        /* Concept Icône "Centrer sur carte" :
+        .poi-item .center-icon { opacity: 0; transition: opacity 0.2s ease; margin-left: 10px; color: var(--text-secondary); }
+        .poi-item:hover .center-icon { opacity: 1; }
+        */
+
+        /* --- Compteur POI --- */
+        #poiCount { font-size: 0.85rem; color: var(--text-secondary); margin-left: 5px; }
+
+        /* --- Panneau Résultats --- */
+        #routeSummary { margin-top: 10px; font-size: 0.95rem; line-height: 1.6; }
+        #routeInstructions { margin-top: 15px; }
+        #routeInstructions h4 { margin-bottom: 10px; font-size: 1rem; }
+        #routeInstructions ol { padding-left: 25px; font-size: 0.95rem; margin: 0; list-style: decimal; }
+        #routeInstructions li { margin-bottom: 8px; line-height: 1.4; }
+        #routeInstructions li strong { font-weight: 600; color: var(--text-primary); }
+
+        /* --- Messages Status --- */
+        .error, .success, .info, .loading {
+            padding: 10px 12px;
+            border-radius: var(--border-radius);
+            margin-top: 10px;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            border: 1px solid transparent;
+        }
+        .error { color: #991B1B; background-color: var(--color-danger-light); border-color: #FCA5A5; font-weight: 500; }
+        .success { color: #065F46; background-color: var(--bg-selected-light); border-color: #6EE7B7; font-weight: 500; }
+        .info { color: #1E40AF; background-color: #DBEAFE; border-color: #93C5FD; font-weight: normal; }
+        .loading { color: var(--text-secondary); font-style: italic; background-color: transparent; border: none; padding: 5px 0; } /* Plus discret */
+
+
+        /* --- Styles Leaflet --- */
+        .leaflet-container { font-family: var(--font-main); font-size: 14px; }
+        /* Style Popup Leaflet */
+        .leaflet-popup-content-wrapper {
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow-medium);
+            background-color: var(--bg-sidebar);
+        }
+        .leaflet-popup-content {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            line-height: 1.4;
+            margin: 12px 15px; /* Plus d'espace intérieur */
+        }
+        .leaflet-popup-content b { font-weight: 600; }
+        .leaflet-popup-content small { font-size: 0.8rem; color: var(--text-secondary); }
+        .leaflet-popup-close-button { color: var(--text-secondary) !important; padding: 8px 8px 0 0 !important; }
+
+        /* Style Marker Cluster (peut être gardé tel quel ou personnalisé) */
+        /* .marker-cluster-small { background-color: rgba(181, 226, 140, 0.6); } ... etc */
+
     </style>
 </head>
 <body>
@@ -64,13 +248,13 @@
             <h3>Planificateur d'Itinéraire IA</h3>
 
             <label for="start">Départ :</label>
-            <input type="text" id="start" placeholder="Adresse de départ">
+            <input type="text" id="start" placeholder="Adresse ou lieu de départ">
 
             <label for="end">Arrivée :</label>
-            <input type="text" id="end" placeholder="Adresse d'arrivée">
+            <input type="text" id="end" placeholder="Adresse ou lieu d'arrivée">
 
             <label for="interests">Décrivez vos intérêts pour ce voyage :</label>
-            <textarea id="interests" placeholder="Ex: Paysages magnifiques, nourriture du terroir, éviter autoroutes..."></textarea>
+            <textarea id="interests" placeholder="Ex: Paysages magnifiques, villages pittoresques, nourriture du terroir, éviter les autoroutes..."></textarea>
 
             <label for="profile">Profil de déplacement :</label>
             <select id="profile">
@@ -80,7 +264,7 @@
                 <option value="foot-walking">Marche</option>
             </select>
 
-            <label for="routePref">Préférence d'itinéraire (Voiture/Camion) :</label>
+            <label for="routePref">Préférence d'itinéraire (si applicable) :</label>
             <select id="routePref">
                 <option value="FASTEST" selected>Le plus rapide</option>
                 <option value="SHORTEST">Le plus court</option>
@@ -88,30 +272,41 @@
                 <option value="AVOID_TOLLS">Éviter les péages</option>
             </select>
 
-            <button id="planRouteBtn">1. Trouver POI & Planifier</button>
+            <button id="planRouteBtn">
+                <i class="fa-solid fa-search"></i>
+                <span class="button-text">1. Trouver POI Pertinents</span>
+                <span class="spinner"></span>
+            </button>
 
             <div id="poiPanel">
                 <h4>Points d'intérêt <span id="poiCount"></span></h4>
                 <div id="poiFilters">
-                    <label title="Points de vue, panoramas, paysages"><input type="checkbox" class="poi-filter" value="viewpoint,panorama,paysage" checked> Vues</label>
-                    <label title="Parcs, jardins, réserves naturelles"><input type="checkbox" class="poi-filter" value="park,parc,garden,jardin,reserve,réserve" checked> Parcs/Réserves</label>
-                    <label title="Magasins fermiers, marchés, produits locaux"><input type="checkbox" class="poi-filter" value="farm,ferme,market,marché,local,terroir,produit" checked> Terroir/Marchés</label>
-                    <label title="Observation oiseaux, refuges"><input type="checkbox" class="poi-filter" value="bird,oiseau,hide,observatoire" checked> Oiseaux</label>
-                    <label title="Sites historiques, châteaux, ruines"><input type="checkbox" class="poi-filter" value="historic,castle,château,ruin,ruine,monument" checked> Historique</label>
+                    <label title="Points de vue, panoramas, paysages"><input type="checkbox" class="poi-filter" value="viewpoint,panorama,paysage,scenic" checked> Vues & Paysages</label>
+                    <label title="Parcs, jardins, réserves naturelles"><input type="checkbox" class="poi-filter" value="park,parc,garden,jardin,reserve,réserve,natural" checked> Parcs/Nature</label>
+                    <label title="Magasins fermiers, marchés, produits locaux"><input type="checkbox" class="poi-filter" value="farm,ferme,market,marché,local,terroir,produit,shop=farm,amenity=marketplace" checked> Terroir/Marchés</label>
+                    <label title="Observation oiseaux, refuges animaliers"><input type="checkbox" class="poi-filter" value="bird,oiseau,hide,observatoire,wildlife" checked> Oiseaux/Faune</label>
+                    <label title="Sites historiques, châteaux, ruines, musées"><input type="checkbox" class="poi-filter" value="historic,castle,château,ruin,ruine,monument,museum,musée" checked> Histoire/Culture</label>
                     <label title="Lacs, rivières, plages, cascades"><input type="checkbox" class="poi-filter" value="water,beach,river,lake,waterfall,eau,plage,rivière,lac,cascade" checked> Eau/Plages</label>
+                    <label title="Villages, lieux pittoresques"><input type="checkbox" class="poi-filter" value="village,hamlet,pittoresque" checked> Villages</label>
                 </div>
-                 <div id="showPoiToggle">
-                    <label><input type="checkbox" id="togglePoiLayer" checked> Afficher POI sur la carte</label>
+                <div id="showPoiToggle">
+                     <label><input type="checkbox" id="togglePoiLayer" checked> Afficher POI sur la carte</label>
                 </div>
-                <div id="poiList" class="loading">En attente...</div>
-                <button id="loadMoreBtn" style="display: none;">Afficher plus de POI</button>
+                <div id="poiList" class="loading" aria-live="polite">En attente...</div>
+                <button id="loadMoreBtn" style="display: none;">
+                    <i class="fa-solid fa-chevron-down"></i> Afficher plus
+                </button>
             </div>
 
-             <button id="calculateSelectedRouteBtn" style="display: none;">2. Calculer l'itinéraire via POI sélectionnés</button>
+             <button id="calculateSelectedRouteBtn" style="display: none;">
+                <i class="fa-solid fa-route"></i>
+                <span class="button-text">2. Calculer Itinéraire via Sélection</span>
+                <span class="spinner"></span>
+             </button>
 
             <div id="resultsPanel">
                 <h4>Itinéraire et Résumé</h4>
-                <div id="routeSummary" class="loading">En attente...</div>
+                 <div id="routeSummary" class="loading" aria-live="polite">En attente...</div>
                 <div id="routeInstructions"></div>
             </div>
         </div>
@@ -120,15 +315,19 @@
 
     <script>
         // --- Configuration ---
-        const ORS_API_KEY = 'VOTRE_KEY'; // REMPLACEZ !
-        const GEMINI_API_KEY = 'VOTRE_KEY'; // REMPLACEZ !
+        // !!! ATTENTION : CLÉS API EXPOSÉES - À NE PAS UTILISER EN PRODUCTION !!!
+        const ORS_API_KEY = '5b3ce3597851110001cf62489d9781999d1f4138b304095132487153'; // REMPLACEZ PAR VOTRE CLÉ ORS (OU MIEUX: GÉREZ CÔTÉ SERVEUR)
+        const GEMINI_API_KEY = 'AIzaSyAUL7AzflndpPJXOsniLCg6SrpZ5_eXBvk'; // REMPLACEZ PAR VOTRE CLÉ GEMINI (OU MIEUX: GÉREZ CÔTÉ SERVEUR)
+        // !!! ------------------------------------------------------------- !!!
         const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
-        const BOUNDING_BOX_MARGIN = 0.15; // Marge pour chercher POI (0.1 degré ~ 11km)
-        const POI_LIST_LIMIT = 30; // Nb POI affichés par page dans la liste
-        const MAP_DEFAULT_CENTER = [46.8139, -71.2080]; // Québec
+        const BOUNDING_BOX_MARGIN = 0.15; // Marge en degrés (~15-16km)
+        const POI_LIST_LIMIT = 30; // Nombre de POI par 'page' dans la liste
+        const MAP_DEFAULT_CENTER = [46.8139, -71.2080]; // Québec City
         const MAP_DEFAULT_ZOOM = 10;
-        const OVERPASS_TIMEOUT = 35; // Timeout pour Overpass en secondes
-        const OVERPASS_API_ENDPOINT = 'https://overpass-api.de/api/interpreter'; // Endpoint Overpass
+        const OVERPASS_TIMEOUT = 35; // Timeout Overpass (secondes)
+        const OVERPASS_API_ENDPOINT = 'https://overpass-api.de/api/interpreter';
+        // Couleur primaire pour l'itinéraire (doit correspondre au CSS via :root)
+        const ROUTE_COLOR = '#3B82F6';
         // ---------------------
 
         // --- Variables Globales ---
@@ -138,9 +337,18 @@
         let displayedPoiCount = 0;
         let selectedPois = [];
         let poiMarkerClusterGroup = null;
-        let currentFilteredPoiList = []; // Liste filtrée actuelle pour la pagination
+        let currentFilteredPoiList = [];
+        let poiMarkers = []; // Références aux L.marker
 
-        // Initialisation Leaflet & MarkerCluster
+        // --- Icônes Leaflet ---
+        const defaultIcon = new L.Icon.Default(); // Utilise l'icône bleue par défaut de Leaflet
+        const selectedIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png', // Vert (correspond à --color-secondary)
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+        });
+
+        // --- Initialisation Leaflet & MarkerCluster ---
         try {
             map = L.map('map').setView(MAP_DEFAULT_CENTER, MAP_DEFAULT_ZOOM);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -148,16 +356,15 @@
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors'
             }).addTo(map);
             poiMarkerClusterGroup = L.markerClusterGroup({
-                 chunkedLoading: true, // Améliore perf pour bcp de marqueurs
-                 maxClusterRadius: 60  // Ajuster rayon de clustering
+                 chunkedLoading: true, maxClusterRadius: 60
             });
-            map.addLayer(poiMarkerClusterGroup); // Ajouter le groupe vide initialement
+            map.addLayer(poiMarkerClusterGroup);
         } catch (e) {
-             console.error("Erreur initialisation Leaflet:", e);
+             console.error("Erreur critique initialisation Leaflet:", e);
              alert("Erreur critique: Impossible d'initialiser la carte Leaflet.");
         }
 
-        // --- DOM Elements ---
+        // --- Références DOM ---
         const startInput = document.getElementById('start');
         const endInput = document.getElementById('end');
         const interestsInput = document.getElementById('interests');
@@ -174,699 +381,443 @@
         const summaryDiv = document.getElementById('routeSummary');
         const instructionsDiv = document.getElementById('routeInstructions');
 
-        // --- Event Listeners ---
-        if (planBtn) planBtn.addEventListener('click', handlePlanning);
-        if (calculateSelectedRouteBtn) calculateSelectedRouteBtn.addEventListener('click', handleRouteCalculationFinal);
-        if (loadMoreBtn) loadMoreBtn.addEventListener('click', () => displayMorePois()); // Appelle sans argument pour utiliser la liste filtrée courante
-        if (togglePoiLayerCheckbox) togglePoiLayerCheckbox.addEventListener('change', togglePoiLayerVisibility);
-        poiFilterCheckboxes.forEach(checkbox => checkbox.addEventListener('change', applyPoiFilters));
+        // --- Écouteurs d'Événements ---
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM Chargé. Initialisation.");
+            if (planBtn) planBtn.addEventListener('click', handlePlanning);
+            if (calculateSelectedRouteBtn) calculateSelectedRouteBtn.addEventListener('click', handleRouteCalculationFinal);
+            if (loadMoreBtn) loadMoreBtn.addEventListener('click', () => displayMorePois());
+            if (togglePoiLayerCheckbox) togglePoiLayerCheckbox.addEventListener('change', togglePoiLayerVisibility);
+            poiFilterCheckboxes.forEach(checkbox => checkbox.addEventListener('change', applyPoiFilters));
+            clearPreviousResults(); // Nettoyer au démarrage
+        });
 
-        // --- Fonctions API (Implémentations complètes) ---
-         /**
-         * Étape 1: Déclenchée par le bouton "Trouver POI & Planifier".
-         * Gère la récupération des POI via IA et Overpass, puis affiche les POI.
-         */
-         async function handlePlanning() {
-            clearPreviousResults();
-            const startAddress = startInput.value;
-            const endAddress = endInput.value;
-            const interestsText = interestsInput.value;
+        // --- Fonctions API (ORS, Gemini, Overpass) ---
 
-            // Validations
-            if (!startAddress || !endAddress || !interestsText) {
-                summaryDiv.innerHTML = '<p class="error">Veuillez remplir Départ, Arrivée et vos Intérêts.</p>';
-                return;
-            }
-            if (ORS_API_KEY.startsWith('VOTRE_') || GEMINI_API_KEY.startsWith('VOTRE_')) {
-                summaryDiv.innerHTML = '<p class="error">ERREUR: Configurez vos clés API ORS et Gemini.</p>';
-                return;
-            }
-
-            // Désactiver boutons pendant le traitement
-            setButtonsDisabled(true);
-            summaryDiv.innerHTML = '<p class="loading info">1/4 Calcul de la zone de recherche...</p>';
-            poiListDiv.innerHTML = '<p class="loading">Calcul de la zone...</p>';
-            poiCountSpan.textContent = '';
-
-            try {
-                // 1. Calculer Bounding Box
-                const boundingBox = await getBoundingBox(startAddress, endAddress);
-                if (!boundingBox) return; // Arrêt si erreur géocodage
-
-                summaryDiv.innerHTML = '<p class="loading info">2/4 Génération requête POI par IA...</p>';
-                // 2. Générer la requête Overpass QL
-                const overpassQueryString = await generateOverpassQueryFromAI(interestsText, boundingBox);
-
-                summaryDiv.innerHTML = '<p class="loading info">3/4 Recherche POI via Overpass (peut être long)...</p>';
-                poiListDiv.innerHTML = '<p class="loading">Exécution requête Overpass...</p>';
-                // 3. Exécuter la requête Overpass
-                fullPoiList = await fetchPoisFromOverpass(overpassQueryString); // Stocker dans la liste globale
-
-                summaryDiv.innerHTML = `<p class="success">4/4 Recherche terminée: ${fullPoiList.length} POI trouvés potentiellement pertinents.</p>`;
-                poiCountSpan.textContent = `(${fullPoiList.length} total)`;
-
-                // 4. Afficher les POI (avec filtres, limite, cluster)
-                applyPoiFilters(); // Applique les filtres initiaux et affiche les POI
-
-                // Afficher le bouton de calcul final si des POI ont été trouvés (même s'ils sont filtrés)
-                if (fullPoiList.length > 0) {
-                    calculateSelectedRouteBtn.style.display = 'block';
-                } else {
-                     poiListDiv.innerHTML = '<p class="info">Aucun POI trouvé pour ces critères/zone.</p>';
-                     summaryDiv.innerHTML += '<br><p class="info">Planification arrêtée : Aucun POI trouvé.</p>';
-                }
-
-            } catch (error) {
-                console.error("Erreur globale handlePlanning:", error);
-                summaryDiv.innerHTML = `<p class="error">ERREUR ÉTAPE 1: ${error.message || 'Erreur inattendue.'}</p>`;
-                poiListDiv.innerHTML = '<p class="error">Erreur.</p>';
-            } finally {
-                setButtonsDisabled(false); // Réactiver le bouton principal
-                 // Ne pas réactiver calculateSelectedRouteBtn ici, il est géré séparément
-            }
-        }
-
-        /**
-         * Étape 2: Déclenchée par le bouton "Calculer l'itinéraire via POI sélectionnés".
-         * Calcule et affiche l'itinéraire final et le résumé IA.
-         */
-         async function handleRouteCalculationFinal() {
-             if (selectedPois.length === 0) {
-                alert("Veuillez sélectionner au moins un point d'intérêt avant de calculer l'itinéraire.");
-                return;
-            }
-
-            setButtonsDisabled(true); // Désactiver les deux boutons
-            summaryDiv.innerHTML = `<p class="loading info">Calcul itinéraire via ${selectedPois.length} POI...</p>`;
-            instructionsDiv.innerHTML = ''; // Nettoyer anciennes instructions
-
-            try {
-                const startAddress = startInput.value;
-                const endAddress = endInput.value;
-                const profile = profileSelect.value;
-                const routePrefValue = routePrefSelect.value; // Lire la préférence ici
-                const interestsText = interestsInput.value; // Pour le résumé
-
-                // 5. Calculer l'itinéraire multi-points ORS
-                const routeData = await getRouteFromOrs(startAddress, endAddress, selectedPois, profile, routePrefValue); // Passer la préférence
-
-                summaryDiv.innerHTML = '<p class="loading info">Génération résumé IA...</p>';
-                // 6. Générer résumé narratif IA
-                const narrativeSummary = await getAiRouteSummary(interestsText, routeData);
-                summaryDiv.innerHTML = narrativeSummary; // Remplacer le loading par le résumé
-
-                summaryDiv.innerHTML += '<p class="loading info">Affichage itinéraire...</p>';
-                // 7. Afficher l'itinéraire et les instructions
-                displayRouteAndInstructions(routeData);
-                summaryDiv.innerHTML += '<br><p class="success">Itinéraire calculé et affiché !</p>'; // Message de succès final
-
-            } catch (error) {
-                console.error("Erreur handleRouteCalculationFinal:", error);
-                summaryDiv.innerHTML = `<p class="error">ERREUR ÉTAPE 2: ${error.message || 'Erreur calcul itinéraire final.'}</p>`;
-            } finally {
-                setButtonsDisabled(false); // Réactiver les deux boutons
-            }
-        }
-        /**
-         * Géocode une adresse en coordonnées [longitude, latitude] via l'API ORS Geocode.
-         * @param {string} address - L'adresse à géocoder.
-         * @returns {Promise<Array<number>|null>} Une promesse résolue avec [lng, lat] ou null en cas d'erreur.
-         */
+        /** Géocode via ORS */
         async function getOrsCoordinates(address) {
-            if (!address) return null; // Éviter requête inutile
-            const url = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}&size=1&boundary.country=CA`; // Limiter au Canada ?
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
+             if (!address) return null;
+             const url = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}&size=1&boundary.country=CA`;
+             try {
+                 const response = await fetch(url);
+                 if (!response.ok) {
                      let errorMsg = `Erreur Géocodage ORS (${response.status}) pour "${address}"`;
                      try { errorMsg += `: ${(await response.json())?.error?.message || response.statusText}`; } catch(e){}
                      throw new Error(errorMsg);
                  }
-                const data = await response.json();
-                if (!data.features || data.features.length === 0) {
-                    throw new Error(`Adresse non trouvée par ORS: "${address}"`);
-                }
-                return data.features[0].geometry.coordinates; // [lng, lat]
-            } catch (error) {
-                console.error("Erreur Géocodage ORS:", error);
-                summaryDiv.innerHTML = `<p class="error">Erreur Géocodage: ${error.message}. Vérifiez l'adresse.</p>`; // Afficher l'erreur
-                // Relancer l'erreur pour arrêter le processus appelant si nécessaire
-                throw error;
-            }
+                 const data = await response.json();
+                 if (!data.features || data.features.length === 0) {
+                     throw new Error(`Adresse non trouvée par ORS: "${address}"`);
+                 }
+                 return data.features[0].geometry.coordinates; // [longitude, latitude]
+             } catch (error) {
+                 console.error("Erreur Géocodage ORS:", error);
+                 summaryDiv.innerHTML = `<p class="error">Erreur Géocodage: ${error.message}. Vérifiez l'adresse.</p>`;
+                 throw error;
+             }
         }
 
-        /**
-         * Calcule le bounding box englobant le départ et l'arrivée avec une marge.
-         * @param {string} startAddress - Adresse de départ.
-         * @param {string} endAddress - Adresse d'arrivée.
-         * @returns {Promise<object|null>} Objet {south, west, north, east} ou null si erreur géocodage.
-         */
+        /** Calcule BBox */
         async function getBoundingBox(startAddress, endAddress) {
-            console.log("Calcul du Bounding Box pour:", startAddress, "->", endAddress);
-            try {
-                const startCoords = await getOrsCoordinates(startAddress);
-                const endCoords = await getOrsCoordinates(endAddress);
-
-                // Si le géocodage a échoué, l'erreur est déjà gérée et l'exception est propagée
-                if (!startCoords || !endCoords) return null; // Devrait être déjà stoppé par l'exception
-
-                console.log("Coords Départ:", startCoords, "Coords Arrivée:", endCoords);
-
-                const lat1 = startCoords[1]; const lon1 = startCoords[0];
-                const lat2 = endCoords[1];   const lon2 = endCoords[0];
-
-                // Gérer le cas où départ et arrivée sont identiques ou très proches
-                if (Math.abs(lat1 - lat2) < 0.001 && Math.abs(lon1 - lon2) < 0.001) {
-                     console.log("Points départ/arrivée très proches, utilisation d'une boîte par défaut autour du point.");
-                     return {
-                         south: lat1 - BOUNDING_BOX_MARGIN,
-                         west:  lon1 - BOUNDING_BOX_MARGIN,
-                         north: lat1 + BOUNDING_BOX_MARGIN,
-                         east:  lon1 + BOUNDING_BOX_MARGIN
-                     };
-                }
-
-                const minLat = Math.min(lat1, lat2);
-                const maxLat = Math.max(lat1, lat2);
-                const minLon = Math.min(lon1, lon2);
-                const maxLon = Math.max(lon1, lon2);
-
-                // Ajouter la marge
-                const south = minLat - BOUNDING_BOX_MARGIN;
-                const west = minLon - BOUNDING_BOX_MARGIN;
-                const north = maxLat + BOUNDING_BOX_MARGIN;
-                const east = maxLon + BOUNDING_BOX_MARGIN;
-
-                const calculatedBbox = { south, west, north, east };
-                console.log("Bounding Box Calculé:", calculatedBbox);
-                return calculatedBbox;
-
-            } catch (error) {
-                 // Erreur déjà loggée par getOrsCoordinates ou ici
-                 console.error("Erreur finale lors du calcul du Bounding Box:", error);
-                 summaryDiv.innerHTML = `<p class="error">Erreur définition zone: ${error.message}</p>`;
-                 return null; // Indiquer l'échec
-            }
+             console.log("Calcul BBox pour:", startAddress, "->", endAddress);
+             try {
+                 const startCoords = await getOrsCoordinates(startAddress);
+                 const endCoords = await getOrsCoordinates(endAddress);
+                 if (!startCoords || !endCoords) return null;
+                 console.log("Coords Départ:", startCoords, "Coords Arrivée:", endCoords);
+                 const lat1 = startCoords[1]; const lon1 = startCoords[0];
+                 const lat2 = endCoords[1];   const lon2 = endCoords[0];
+                 if (Math.abs(lat1 - lat2) < 0.001 && Math.abs(lon1 - lon2) < 0.001) {
+                     return { south: lat1 - BOUNDING_BOX_MARGIN, west:  lon1 - BOUNDING_BOX_MARGIN, north: lat1 + BOUNDING_BOX_MARGIN, east:  lon1 + BOUNDING_BOX_MARGIN };
+                 }
+                 const minLat = Math.min(lat1, lat2); const maxLat = Math.max(lat1, lat2);
+                 const minLon = Math.min(lon1, lon2); const maxLon = Math.max(lon1, lon2);
+                 const south = minLat - BOUNDING_BOX_MARGIN; const west = minLon - BOUNDING_BOX_MARGIN;
+                 const north = maxLat + BOUNDING_BOX_MARGIN; const east = maxLon + BOUNDING_BOX_MARGIN;
+                 const calculatedBbox = { south, west, north, east };
+                 console.log("BBox Calculée:", calculatedBbox);
+                 return calculatedBbox;
+             } catch (error) {
+                  console.error("Erreur finale calcul BBox:", error);
+                  summaryDiv.innerHTML = `<p class="error">Erreur définition zone: ${error.message}</p>`;
+                  return null;
+             }
         }
 
-        /**
-         * Demande à l'IA (Gemini) de générer une requête Overpass QL basée sur les intérêts et la zone.
-         * @param {string} interests - Description textuelle des intérêts.
-         * @param {object} boundingBox - Objet {south, west, north, east}.
-         * @returns {Promise<string>} La requête Overpass QL générée.
-         */
+        /** Génère requête Overpass via IA (INTERDICTION REGEX '~') */
         async function generateOverpassQueryFromAI(interests, boundingBox) {
              if (!boundingBox || typeof boundingBox.south !== 'number') {
-                throw new Error("Bounding Box invalide fourni pour la génération de requête IA.");
-            }
-            // Formatage sécurisé pour éviter les erreurs de précision ?
-            const bboxString = `(${boundingBox.south.toFixed(6)},${boundingBox.west.toFixed(6)},${boundingBox.north.toFixed(6)},${boundingBox.east.toFixed(6)})`;
+                 throw new Error("BBox invalide pour IA.");
+             }
+             // Bbox string SANS les parenthèses autour
+             const bboxString = `${boundingBox.south.toFixed(6)},${boundingBox.west.toFixed(6)},${boundingBox.north.toFixed(6)},${boundingBox.east.toFixed(6)}`;
 
-            const prompt = `
-                Tu es un expert mondial en données OpenStreetMap (OSM) et dans le langage de requête Overpass QL.
-                L'utilisateur souhaite planifier un itinéraire et a décrit ses intérêts.
-                Ta tâche est de générer une requête Overpass QL complète et optimisée pour trouver des points d'intérêt (POI) pertinents (nodes, ways, relations) dans une zone géographique donnée.
+             // --- PROMPT DÉTAILLÉ POUR GEMINI (INTERDICTION REGEX) ---
+             const prompt = `
+                 Tu es un expert mondial en données OpenStreetMap (OSM) et dans le langage de requête Overpass QL.
+                 L'utilisateur souhaite planifier un itinéraire et a décrit ses intérêts.
+                 Ta tâche est de générer une requête Overpass QL complète et optimisée pour trouver des points d'intérêt (POI) pertinents (nodes, ways, relations) dans une zone géographique donnée.
 
-                Intérêts de l'utilisateur: "${interests}"
+                 Intérêts de l'utilisateur: "${interests}"
 
-                Zone géographique (bounding box au format south, west, north, east): ${bboxString}
+                 Zone géographique (bounding box au format south, west, north, east): ${bboxString}
 
-                Instructions pour la requête Overpass QL:
-                1.  Utilise le format de sortie '[out:json]' et un timeout raisonnable '[timeout:${OVERPASS_TIMEOUT}]'.
-                2.  Combine plusieurs types de POI pertinents basés sur les intérêts de l'utilisateur en utilisant la logique OR (union). Par exemple, pour "paysages et oiseaux", cherche les points de vue (tourism=viewpoint), les parcs (leisure=park), les réserves naturelles (leisure=nature_reserve), les sommets (natural=peak), les lacs/rivières (natural=water), les zones ornithologiques (leisure=bird_hide), peut-être des routes panoramiques (highway=road + scenic=yes, mais attention c'est rare). Pour "nourriture du terroir", cherche les marchés (amenity=marketplace), les magasins à la ferme (shop=farm), les producteurs locaux si possible (shop=food + product=*, ou via nom). Pour "villages pittoresques", cherche les lieux marqués comme place=village ou place=hamlet et peut-être avec des éléments historic=*.
-                3.  Applique le bounding box ${bboxString} correctement à chaque clause de recherche principale DANS l'union (ex: '( node[tag]${bboxString}; way[tag]${bboxString}; );' ).
-                4.  Utilise 'out center;' pour obtenir un point central pour les ways et relations afin d'avoir des coordonnées pour tous les résultats.
-                5.  Essaie de limiter la complexité si possible pour éviter les timeouts Overpass, mais sois assez large pour trouver des choses intéressantes. NE PAS utiliser de requêtes récursives complexes (comme > ou <) si non essentiel.
-                6.  Ne génère QUE la requête Overpass QL sous forme de chaîne de caractères brute. N'ajoute AUCUN commentaire dans le code QL, aucune explication avant ou après, et aucun formatage markdown (comme \`\`\`).
+                 Instructions pour la requête Overpass QL:
+                 1.  **Format de Sortie Obligatoire:** Commence par \`[out:json][timeout:${OVERPASS_TIMEOUT}];\` et termine par \`out center;\`.
+                 2.  **Application de la Zone:** Applique le bounding box \`${bboxString}\` DIRECTEMENT après le tag/filtre, SANS parenthèses supplémentaires autour des coordonnées. Syntaxe CORRECTE : \`type[tag](south,west,north,east);\`. Exemple: \`node["amenity"="restaurant"](${bboxString});\`.
+                 3.  **Pertinence des Tags:** Traduis les 'intérêts' en tags OSM pertinents. Concentre-toi sur :
+                     * **Vues/Paysages:** \`tourism=viewpoint\`, \`natural=peak\`, \`man_made=lighthouse\`, zones \`natural=wood\`, \`natural=water\`, \`natural=heath\`, \`natural=grassland\`.
+                     * **Parcs/Nature:** \`leisure=park\`, \`leisure=nature_reserve\`, \`boundary=national_park\`, \`boundary=protected_area\`, \`leisure=garden\`.
+                     * **Terroir/Marchés:** \`amenity=marketplace\`, \`shop=farm\`, \`shop=deli\`, \`shop=cheese\`, \`shop=wine\`, \`craft=brewery\`, \`craft=pottery\`.
+                     * **Oiseaux/Faune:** \`leisure=bird_hide\`, \`tourism=attraction[attraction=animal]\`, zones \`natural=wetland\`.
+                     * **Histoire/Culture:** \`historic=*\` (castle, ruins, monument, archaeological_site), \`tourism=museum\`, \`tourism=attraction\`, \`amenity=theatre\`, \`amenity=arts_centre\`.
+                     * **Eau/Plages:** \`natural=water\`, \`natural=coastline\`, \`natural=beach\`, \`natural=spring\`, \`waterway=waterfall\`.
+                     * **Villages:** Chercher \`place=village\` ou \`place=hamlet\` et inclure les éléments historiques/touristiques à l'intérieur.
+                 4.  **Structure de la Requête:** Utilise une union \`( ... );\` pour regrouper les différentes recherches. Exemple: \`( node["tourism"="viewpoint"](${bboxString}); way["leisure"="park"](${bboxString}); );\`. Point-virgule sépare chaque clause DANS l'union.
+                 5.  **Performance:** Cible les tags spécifiques. Évite les requêtes trop génériques. Utilise \`node\`, \`way\` de manière appropriée. Ne cherche pas \`relation\` sauf pour \`boundary=*\` si pertinent.
+                 6.  **Nommage implicite:** Choisis des tags qui ont souvent un \`name\`.
+                 7.  **Syntaxe Strict des Filtres:** Utilise **UNIQUEMENT** des correspondances exactes avec '=' (ex: \`["amenity"="restaurant"]\`) ou des vérifications d'existence de clé (ex: \`["historic"]\`). **N'utilise JAMAIS l'opérateur regex '~'**.
+                 8.  **Sortie Brute:** Ne génère QUE la requête Overpass QL. Pas de commentaires, pas d'explications, pas de formatage Markdown (\`\`\`).
 
-                Requête Overpass QL générée:
-            `;
+                 Requête Overpass QL générée:
+             `;
+             // --- FIN DU PROMPT ---
 
-            try {
-                console.log("Prompt Gemini (Query Gen) avec BBox:", bboxString);
-                const response = await fetch(GEMINI_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { temperature: 0.3, topP: 0.95 } // Ajuster pour + de cohérence
-                         })
-                });
-                if (!response.ok) {
-                    let errorMsg = `Erreur API Gemini (${response.status}) Query Gen.`;
-                     try { errorMsg += ` Détail: ${(await response.json())?.error?.message || response.statusText}`; } catch(e){}
-                     throw new Error(errorMsg);
+             try {
+                 console.log("Prompt Gemini (Query Gen) avec BBox:", bboxString);
+                 // console.log("Prompt envoyé:", prompt); // Décommenter pour vérifier le prompt complet
+                 const response = await fetch(GEMINI_API_URL, {
+                     method: 'POST', headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.3, topP: 0.95 } })
+                 });
+                 if (!response.ok) {
+                     let errorMsg = `Erreur API Gemini (${response.status}) Query Gen.`; try { errorMsg += ` Détail: ${(await response.json())?.error?.message || response.statusText}`; } catch(e){} throw new Error(errorMsg);
                  }
-                const data = await response.json();
-
+                 const data = await response.json();
+                 // console.log("Réponse brute Gemini:", JSON.stringify(data)); // Pour débugger la réponse
                  if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    console.error("Réponse Gemini (Query Gen) inattendue:", JSON.stringify(data));
-                    throw new Error("Structure de réponse IA inattendue (Query Gen).");
+                     console.error("Réponse Gemini (Query Gen) inattendue:", JSON.stringify(data)); throw new Error("Structure réponse IA inattendue (Query Gen).");
                  }
-                const generatedQuery = data.candidates[0].content.parts[0].text;
+                 const generatedQuery = data.candidates[0].content.parts[0].text;
 
-                if (!generatedQuery.includes('[out:json]')) {
-                    console.error("Requête générée invalide ou vide:", generatedQuery);
-                    throw new Error("L'IA n'a pas généré une requête Overpass QL valide (manque [out:json]).");
-                }
-                const cleanedQuery = generatedQuery.replace(/```(ql|overpass)?\s*|\s*```/g, '').trim();
-                console.log("Requête Overpass générée par IA (nettoyée):", cleanedQuery);
-                return cleanedQuery;
+                 // Nettoyage et Validation
+                 const cleanedQuery = generatedQuery.replace(/```(ql|overpass)?\s*|\s*```/g, '').trim();
+                 if (!cleanedQuery.startsWith('[out:json]') || !cleanedQuery.includes('out center;')) {
+                     console.error("Requête générée invalide ou vide:", cleanedQuery);
+                     if (cleanedQuery.length < 50 && cleanedQuery.toLowerCase().includes("prompt")) {
+                         throw new Error("L'IA a répondu au lieu de générer la requête (vérifiez le prompt envoyé).");
+                     } else {
+                         throw new Error("L'IA n'a pas généré une requête Overpass QL valide (format incorrect).");
+                     }
+                 }
+                 // Vérification supplémentaire: absence de l'opérateur ~
+                 if (cleanedQuery.includes('~')) {
+                      console.error("Erreur critique: L'IA a utilisé l'opérateur interdit '~' !", cleanedQuery);
+                      throw new Error("Erreur de syntaxe générée par l'IA (opérateur '~' interdit utilisé).");
+                 }
 
-            } catch (error) {
-                console.error("Erreur appel IA (Query Gen):", error);
-                // Renvoyer l'erreur pour l'afficher dans l'UI
-                throw new Error(`Génération requête IA échouée: ${error.message}`);
-            }
+                 console.log("Requête Overpass générée par IA (nettoyée):", cleanedQuery);
+                 return cleanedQuery;
+             } catch (error) {
+                 console.error("Erreur appel IA (Query Gen):", error);
+                 throw new Error(`Génération requête IA échouée: ${error.message}`);
+             }
         }
 
-        /**
-         * Exécute la requête Overpass QL fournie et retourne les POI.
-         * @param {string} generatedQueryString - La requête Overpass QL complète.
-         * @returns {Promise<Array<object>>} Liste des POI {id, name, coordinates, tags}.
-         */
+
+        /** Exécute requête Overpass */
         async function fetchPoisFromOverpass(generatedQueryString) {
-            if (!generatedQueryString) {
-                console.warn("Aucune requête Overpass fournie à exécuter.");
-                return [];
-            }
-            console.log("Exécution de la requête Overpass générée...");
-
+            if (!generatedQueryString) return [];
+            console.log("Exécution requête Overpass...");
+             // DEBUG: Logguer la requête EXACTE envoyée à Overpass
+             console.log("Query String Envoyée:", generatedQueryString);
+            if(poiListDiv) poiListDiv.innerHTML = '<p class="loading">Recherche POI via Overpass API...</p>';
             try {
-                // Utiliser fetch avec un timeout (via AbortController) pour éviter les blocages indéfinis
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), (OVERPASS_TIMEOUT + 5) * 1000); // Timeout client un peu plus long que celui serveur
-
+                const timeoutId = setTimeout(() => controller.abort(), (OVERPASS_TIMEOUT + 5) * 1000); // Timeout client
                 const response = await fetch(OVERPASS_API_ENDPOINT, {
-                    method: 'POST',
-                    body: `data=${encodeURIComponent(generatedQueryString)}`,
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-                    signal: controller.signal // Lier l'AbortController
+                    method: 'POST', body: `data=${encodeURIComponent(generatedQueryString)}`,
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }, signal: controller.signal
                 });
-
-                clearTimeout(timeoutId); // Annuler le timeout client si la réponse arrive
-
+                clearTimeout(timeoutId);
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error(`Erreur brute d'Overpass API (${response.status}):`, errorText);
-                    const errorMatch = errorText.match(/<p>Error: (.*?)<\/p>/) || errorText.match(/Error:(.*)/);
-                    const simpleError = errorMatch ? errorMatch[1].trim() : `Statut ${response.status}.`;
-                    // Distinguer timeout potentiel
-                    if (response.status === 400 && simpleError.includes("timeout")) {
-                        throw new Error(`Erreur API Overpass: Timeout (${OVERPASS_TIMEOUT}s). La requête IA était trop complexe.`);
-                    } else if (response.status === 429) {
-                        throw new Error(`Erreur API Overpass: Trop de requêtes (Rate Limit). Réessayez plus tard.`);
-                    }
-                     throw new Error(`Erreur API Overpass: ${simpleError}. Vérifiez la requête IA.`);
-                }
+                    const errorText = await response.text(); console.error(`Erreur brute Overpass API (${response.status}):`, errorText);
+                    // Extraction améliorée du message d'erreur
+                    let simpleError = `Statut ${response.status}`;
+                    const errorMatchHtml = errorText.match(/<p><strong.*?>(?:Error|erreur):?\s*(.*?)<\/strong><\/p>/i);
+                    const errorMatchText = errorText.match(/Error:\s*(.*)/i);
+                    if (errorMatchHtml && errorMatchHtml[1]) simpleError = errorMatchHtml[1].trim();
+                    else if (errorMatchText && errorMatchText[1]) simpleError = errorMatchText[1].trim();
+                    else simpleError += `. ${response.statusText}`;
 
+                    // Gestion des erreurs spécifiques
+                    if (response.status === 400 && simpleError.toLowerCase().includes("timeout")) throw new Error(`Erreur API Overpass: Timeout serveur (${OVERPASS_TIMEOUT}s). Requête IA trop complexe.`);
+                    else if (response.status === 400 && simpleError.toLowerCase().includes("parse error")) throw new Error(`Erreur API Overpass: Erreur de syntaxe. ${simpleError}. Vérifiez la requête IA générée.`);
+                    else if (response.status === 429) throw new Error(`Erreur API Overpass: Trop de requêtes (code 429). Réessayez plus tard.`);
+                    else if (response.status === 504) throw new Error(`Erreur API Overpass: Gateway Timeout (code 504). Serveur surchargé. Réessayez.`);
+                    throw new Error(`Erreur API Overpass: ${simpleError}.`);
+                 }
                 const data = await response.json();
-
-                // Mapper les résultats
                 const pois = data.elements.map(el => {
                     let name = el.tags?.name || el.tags?.['official_name'] || el.tags?.['alt_name'];
                     if (!name) {
-                        // Essayer de trouver un tag descriptif principal
                         const primaryTagEntry = Object.entries(el.tags || {}).find(([k, v]) =>
-                            !['name', 'official_name', 'alt_name', 'source', 'note', 'fixme', 'wikidata', 'wikipedia', 'created_by', 'addr:housenumber', 'addr:street', 'addr:city', 'addr:postcode', 'opening_hours', 'phone', 'website'].includes(k) && v !== 'no' && v!== 'yes' // Exclure plus de tags non descriptifs et valeurs simples oui/non
+                            !['name', 'official_name', 'alt_name', 'source', 'note', 'fixme', 'wikidata', 'wikipedia', 'created_by', 'addr:housenumber', 'addr:street', 'addr:city', 'addr:postcode', 'opening_hours', 'phone', 'website', 'ele', 'ref'].includes(k) && v !== 'no' && v!== 'yes' && k.length > 1
                         );
                         if (primaryTagEntry) {
                             const [key, value] = primaryTagEntry;
-                            let typeName = value.replace(/_/g, ' '); // Remplacer underscores par espaces
-
-                            // Améliorer la lisibilité pour les cas courants (vous pouvez en ajouter d'autres)
-                            const typeMap = {
-                                'tourism=viewpoint': 'Point de vue',
-                                'leisure=park': 'Parc',
-                                'leisure=nature_reserve': 'Réserve naturelle',
-                                'shop=farm': 'Magasin fermier',
-                                'amenity=marketplace': 'Marché',
-                                'natural=water': 'Plan d\'eau',
-                                'natural=peak': 'Sommet',
-                                'historic=ruins': 'Ruines',
-                                'historic=castle': 'Château',
-                                'leisure=bird_hide': 'Observatoire oiseaux'
-                                // Ajoutez d'autres paires 'key=value': 'Nom Lisible' ici
-                            };
-                            const tagString = `<span class="math-inline">\{key\}\=</span>{value}`;
-                            typeName = typeMap[tagString] || typeName.charAt(0).toUpperCase() + typeName.slice(1); // Utiliser le nom lisible ou capitaliser la valeur du tag
-
-                            name = `${typeName} (sans nom)`;
+                            let typeName = value.replace(/_/g, ' ');
+                            const typeMap = { 'tourism=viewpoint': 'Point de vue', 'leisure=park': 'Parc', 'leisure=nature_reserve': 'Réserve naturelle', 'shop=farm': 'Magasin fermier', 'amenity=marketplace': 'Marché', 'natural=water': 'Plan d\'eau', 'natural=peak': 'Sommet', 'historic=ruins': 'Ruines', 'historic=castle': 'Château', 'leisure=bird_hide': 'Observatoire oiseaux', 'amenity=restaurant':'Restaurant', 'tourism=museum': 'Musée', 'natural=beach': 'Plage'};
+                            const tagString = `${key}=${value}`;
+                            name = typeMap[tagString] || (typeName.charAt(0).toUpperCase() + typeName.slice(1));
                         } else {
-                            name = `[POI sans nom #${el.id}]`; // Fallback ultime
+                            name = `[POI #${el.id}]`;
                         }
                     }
-                    return {
-                        id: el.id,
-                        name: name,
-                        coordinates: [el.lon ?? el.center?.lon, el.lat ?? el.center?.lat],
-                        tags: el.tags
-                    };
-                }).filter(poi => poi.coordinates[0] && poi.coordinates[1]);
+                    const lon = el.lon ?? el.center?.lon;
+                    const lat = el.lat ?? el.center?.lat;
+                    if (lon == null || lat == null) {
+                         console.warn("POI sans coordonnées valides ignoré:", el.id, el.tags); return null;
+                    }
+                    return { id: el.id, name: name, coordinates: [lon, lat], tags: el.tags || {} };
+                }).filter(poi => poi !== null);
 
-                console.log(`Nombre de POIs trouvés par Overpass: ${pois.length}`);
-                // Optionnel: Filtrer les doublons par ID (Overpass peut retourner node+way pour le même objet)
+                console.log(`Nb POIs trouvés Overpass: ${pois.length}`);
                 const uniquePois = Array.from(new Map(pois.map(p => [p.id, p])).values());
-                 if (uniquePois.length < pois.length) {
-                     console.log(`Filtré ${pois.length - uniquePois.length} doublons de POI par ID.`);
-                 }
+                 if (uniquePois.length < pois.length) console.log(`Filtré ${pois.length - uniquePois.length} doublons.`);
                 return uniquePois;
-
             } catch (error) {
-                console.error("Erreur lors de l'exécution/traitement requête Overpass:", error);
-                 if (error.name === 'AbortError') {
-                    throw new Error(`Erreur API Overpass: Timeout client dépassé (${OVERPASS_TIMEOUT + 5}s).`);
-                 }
-                // Renvoyer l'erreur pour l'afficher
+                console.error("Erreur fetch/traitement Overpass:", error);
+                if (error.name === 'AbortError') throw new Error(`Erreur API Overpass: Timeout client (${OVERPASS_TIMEOUT + 5}s).`);
                 throw new Error(`Erreur recherche POI: ${error.message}`);
             }
         }
 
-        /**
-         * Calcule l'itinéraire via ORS en passant par les waypoints sélectionnés.
-         * @param {string} startAddress - Adresse départ.
-         * @param {string} endAddress - Adresse arrivée.
-         * @param {Array<object>} waypoints - Liste des POI sélectionnés { coordinates: [lng, lat] }.
-         * @param {string} profile - Profil ORS (ex: 'driving-car').
-         * @param {string} routePreference - Préférence (FASTEST, SHORTEST, AVOID_HIGHWAYS, AVOID_TOLLS).
-         * @returns {Promise<object>} Données GeoJSON de l'itinéraire.
-         */
+        /** Calcule itinéraire ORS */
         async function getRouteFromOrs(startAddress, endAddress, waypoints, profile, routePreference) {
-            summaryDiv.innerHTML += '<p class="loading">...géocodage départ/arrivée...</p>';
-            let startCoords, endCoords;
-            try {
-                startCoords = await getOrsCoordinates(startAddress);
-                endCoords = await getOrsCoordinates(endAddress);
-            } catch (error) {
-                 // L'erreur est déjà affichée par getOrsCoordinates, on la relance pour arrêter
-                 throw error;
-            }
-            if (!startCoords || !endCoords) throw new Error("Géocodage du départ ou de l'arrivée échoué (coords null).");
-
+            if(summaryDiv) summaryDiv.innerHTML += '<p class="loading">...géocodage départ/arrivée...</p>';
+            let startCoords, endCoords; try { startCoords = await getOrsCoordinates(startAddress); endCoords = await getOrsCoordinates(endAddress); } catch (error) { throw error; }
+            if (!startCoords || !endCoords) throw new Error("Géocodage départ/arrivée échoué (coords null).");
             const allCoordinates = [startCoords, ...waypoints.map(poi => poi.coordinates), endCoords];
-
-            let options = {}; // Utiliser un objet pour les options
-            let preference = 'fastest'; // Défaut
-
+            let orsOptions = {}; let orsPreference = 'fastest';
             if (profile === 'driving-car' || profile === 'driving-hgv') {
-                 const avoidFeatures = [];
-                 if (routePreference === 'AVOID_HIGHWAYS') {
-                     avoidFeatures.push('highways');
-                     preference = 'shortest'; // Souvent mieux sans autoroutes
-                 }
-                 if (routePreference === 'AVOID_TOLLS') {
-                     avoidFeatures.push('tollways');
-                 }
-                 if (avoidFeatures.length > 0) {
-                     options.avoid_features = avoidFeatures;
-                 }
-                 if (routePreference === 'SHORTEST') {
-                     preference = 'shortest';
-                 }
-                 // Pour HGV, on pourrait ajouter des options de dimensions ici si on les avait
-                 if (profile === 'driving-hgv') {
-                      options.vehicle_type = 'hgv'; // Spécifier explicitement? Doc ORS
-                      // Ex: options.weight = 15000; options.height = 4; options.length = 12;
-                      preference = 'shortest'; // Préférer shortest pour HGV par défaut?
-                 }
+                const avoidFeatures = [];
+                if (routePreference === 'AVOID_HIGHWAYS') { avoidFeatures.push('highways'); orsPreference = 'shortest'; }
+                if (routePreference === 'AVOID_TOLLS') { avoidFeatures.push('tollways'); }
+                if (avoidFeatures.length > 0) { orsOptions.avoid_features = avoidFeatures; }
+                if (routePreference === 'SHORTEST') { orsPreference = 'shortest'; }
+                 if (profile === 'driving-hgv') { orsPreference = 'shortest'; } // HGV default shortest
             }
-            // Gérer d'autres profils si nécessaire
-
             const url = `https://api.openrouteservice.org/v2/directions/${profile}/geojson`;
-            const body = {
-                coordinates: allCoordinates,
-                language: 'fr',
-                instructions: true,
-                instructions_format: "text",
-                // Ne passer 'options' que s'il contient quelque chose
-                ...(Object.keys(options).length > 0 && { options: options }),
-                preference: preference
-            };
-            summaryDiv.innerHTML += '<p class="loading">...appel API routage ORS...</p>';
-            console.log("Requête ORS:", JSON.stringify(body)); // Log pour débogage
-
+            const body = { coordinates: allCoordinates, language: 'fr', instructions: true, instructions_format: "text", ...(Object.keys(orsOptions).length > 0 && { options: orsOptions }), preference: orsPreference };
+            if(summaryDiv) summaryDiv.innerHTML += '<p class="loading">...appel API routage ORS...</p>'; console.log("Requête ORS:", JSON.stringify(body));
             try {
                 const response = await fetch(url, {
-                    method: 'POST',
-                    body: JSON.stringify(body),
-                    headers: {
-                        'Authorization': ORS_API_KEY,
-                        'Content-Type': 'application/json; charset=utf-8',
-                        'Accept': 'application/json, application/geo+json'
-                    }
+                    method: 'POST', body: JSON.stringify(body), headers: { 'Authorization': ORS_API_KEY, 'Content-Type': 'application/json; charset=utf-8', 'Accept': 'application/json, application/geo+json'}
                 });
                 if (!response.ok) {
-                    let errorMsg = `Erreur Routage ORS (${response.status})`;
-                     try { errorMsg += `: ${(await response.json())?.error?.message || response.statusText}`; } catch(e){}
-                     if (response.status === 404 && errorMsg.includes("Point")) errorMsg += ". Un POI est peut-être inaccessible ?";
-                     else if (response.status === 400 && errorMsg.includes("maximum distance")) errorMsg += ". Itinéraire trop long ?";
-                    throw new Error(errorMsg);
-                }
+                    let errorMsg = `Erreur Routage ORS (${response.status})`; try { errorMsg += `: ${(await response.json())?.error?.message || response.statusText}`; } catch(e){}
+                    if (response.status === 404 && errorMsg.includes("Point")) errorMsg += ". Un POI inaccessible ?"; else if (response.status === 400 && errorMsg.includes("maximum distance")) errorMsg += ". Itinéraire trop long ?"; throw new Error(errorMsg);
+                 }
                 return await response.json();
             } catch (error) {
-                console.error("Erreur Routage ORS:", error);
-                throw new Error(`Calcul itinéraire ORS échoué: ${error.message}`);
+                 console.error("Erreur Routage ORS:", error); throw new Error(`Calcul itinéraire ORS échoué: ${error.message}`);
             }
         }
 
-        /**
-         * Demande à l'IA (Gemini) de générer un résumé narratif du voyage.
-         * @param {string} interests - Intérêts de l'utilisateur.
-         * @param {object} routeData - Données GeoJSON de l'itinéraire ORS.
-         * @returns {Promise<string>} Résumé textuel généré.
-         */
+        /** Génère résumé IA */
         async function getAiRouteSummary(interests, routeData) {
-             if (!routeData) return "<p class='error'>Données d'itinéraire manquantes pour générer le résumé.</p>";
+            if (!routeData) return "<p class='error'>Données itinéraire manquantes pour résumé.</p>";
             try {
-                 const segments = routeData?.features?.[0]?.properties?.segments || [];
-                 const summary = routeData?.features?.[0]?.properties?.summary;
-                 const distanceKm = summary ? (summary.distance / 1000).toFixed(1) : '?';
-                 const durationMin = summary ? Math.round(summary.duration / 60) : '?';
-                 const waypointNames = selectedPois.map(p => p.name).join(', ') || 'points d\'intérêt sélectionnés';
-                 // Extraire une instruction clé par segment
-                 const segmentHighlights = segments.map((seg, index) => {
-                    let highlight = `Étape ${index+1}`;
-                    if (seg.steps && seg.steps.length > 0) {
-                        // Cherche une instruction significative (pas juste 'continue')
-                        const significantStep = seg.steps.find(s => !s.instruction.toLowerCase().startsWith("continuez")) || seg.steps[0];
-                        if (significantStep) highlight += `: ${significantStep.instruction.substring(0,50)}...`;
-                    }
-                    return highlight;
+                const segments = routeData?.features?.[0]?.properties?.segments || []; const summary = routeData?.features?.[0]?.properties?.summary;
+                const distanceKm = summary ? (summary.distance / 1000).toFixed(1) : '?'; const durationMin = summary ? Math.round(summary.duration / 60) : '?';
+                const waypointNames = selectedPois.map(p => p.name).join(', ') || 'points d\'intérêt';
+                const segmentHighlights = segments.map((seg, index) => {
+                     let highlight = `Étape ${index+1}`; if (seg.steps?.length > 0) { const significantStep = seg.steps.find(s => !s.instruction.toLowerCase().startsWith("continuez")) || seg.steps[0]; if (significantStep) highlight += `: ${significantStep.instruction.substring(0,50)}...`; } return highlight;
                  }).join('; ');
 
                  const prompt = `
-                    Tu es un assistant de voyage enthousiaste. Rédige un court paragraphe (environ 4-6 phrases) décrivant le voyage planifié de manière attrayante et personnalisée, en te basant sur les intérêts de l'utilisateur et les détails de l'itinéraire. Mets en valeur comment le trajet semble correspondre à ses attentes.
+                     Tu es un assistant de voyage enthousiaste et un excellent rédacteur. Ton but est de générer un court paragraphe (3-5 phrases) inspirant et engageant qui résume un itinéraire de voyage, en liant les intérêts de l'utilisateur aux points de passage et caractéristiques du trajet.
 
-                    Intérêts de l'utilisateur: "${interests}"
-                    Itinéraire calculé: Passe par ${waypointNames}. Distance totale: ${distanceKm} km, Durée estimée: ${durationMin} minutes. Aperçu des étapes: ${segmentHighlights.substring(0, 250)}...
+                     Directives :
+                     1.  **Ton :** Positif, invitant, légèrement descriptif. Évoque l'ambiance du voyage.
+                     2.  **Contenu :** Mentionne brièvement le départ/l'arrivée (si pertinent dans le contexte), les types de POI ou les POI nommés, et relie-les aux intérêts donnés. Intègre subtilement la distance/durée pour donner une idée de l'échelle. Fais allusion à ce que le voyageur pourrait voir ou expérimenter.
+                     3.  **Langue :** Français.
+                     4.  **Format :** Un seul paragraphe de texte brut. Pas de titres, pas de listes, pas de Markdown.
 
-                    Paragraphe narratif (en français, ton direct et engageant):
-                 `;
+                     Informations sur le voyage :
+                     * Intérêts de l'utilisateur : "${interests}"
+                     * Itinéraire calculé : Passe par ${waypointNames}.
+                     * Distance totale : ${distanceKm} km
+                     * Durée estimée : ${durationMin} minutes
+                     * Aperçu des étapes : ${segmentHighlights.substring(0, 250)}...
 
-                 const response = await fetch(GEMINI_API_URL, {
-                     method: 'POST',
-                     headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { temperature: 0.7, topP: 0.9 }
-                         })
+                     Paragraphe narratif (en français) :`;
+
+                const response = await fetch(GEMINI_API_URL, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7, topP: 0.9 } })
                  });
-                  if (!response.ok) throw new Error(`Erreur API Gemini (${response.status}) pour le résumé.`);
+                 if (!response.ok) throw new Error(`Erreur API Gemini (${response.status}) pour résumé.`);
                  const data = await response.json();
-
-                  if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    console.error("Réponse Gemini (Résumé) inattendue:", data);
-                    return "<p class='error'>Erreur: Structure de réponse IA inattendue pour le résumé.</p>";
+                 if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    console.error("Réponse Gemini (Résumé) inattendue:", data); return "<p class='error'>Erreur: Structure réponse IA inattendue pour résumé.</p>";
                  }
-                 const summaryText = data.candidates[0].content.parts[0].text;
-                 // Nettoyage simple
-                 return summaryText.replace(/<p>/gi, '').replace(/<\/p>/gi, '<br>');
-
+                 let summaryText = data.candidates[0].content.parts[0].text;
+                 summaryText = summaryText.replace(/<p>/gi, '').replace(/<\/p>/gi, '<br>');
+                 return `<p>${summaryText}</p>`;
             } catch (error) {
-                console.error("Erreur appel IA (Résumé):", error);
-                return `<p class="error">Impossible de générer le résumé IA: ${error.message}</p>`;
+                 console.error("Erreur appel IA (Résumé):", error); return `<p class="error">Impossible de générer le résumé IA: ${error.message}</p>`;
             }
         }
 
 
-        // --- Fonctions d'Affichage et d'Interaction (Implémentations complètes) ---
+        // --- Fonctions d'Affichage et d'Interaction ---
 
-        /** Affiche les POI filtrés (liste + carte cluster). Gère pagination liste. */
+        /** Affiche POI filtrés (liste + carte) */
         function displayPoisAndEnableSelection(poisToDisplay) {
-            console.log(`Affichage des POI filtrés (max ${POI_LIST_LIMIT} dans la liste initialement)`);
-            poiListDiv.innerHTML = '';
-            poiMarkerClusterGroup.clearLayers();
-            poiMarkers = [];
-            // Ne pas réinitialiser selectedPois ici, l'utilisateur peut vouloir garder sa sélection entre filtrages
-            displayedPoiCount = 0;
+             console.log(`Affichage initial POI filtrés (max ${POI_LIST_LIMIT} liste). Total filtré: ${poisToDisplay.length}`);
+             poiListDiv.innerHTML = ''; // Vider liste
+             poiMarkerClusterGroup.clearLayers(); // Vider marqueurs cluster
+             poiMarkers = []; // Vider refs marqueurs
+             displayedPoiCount = 0;
+             currentFilteredPoiList = poisToDisplay;
 
-            currentFilteredPoiList = poisToDisplay; // Mémoriser la liste filtrée actuelle
-
-            if (!currentFilteredPoiList || currentFilteredPoiList.length === 0) {
-                if (fullPoiList.length > 0) {
-                    poiListDiv.innerHTML = '<p class="info">Aucun POI ne correspond aux filtres actifs.</p>';
-                } else {
-                    poiListDiv.innerHTML = '<p class="info">Aucun POI trouvé par Overpass.</p>';
-                }
-                loadMoreBtn.style.display = 'none';
-                updatePoiCount(0, 0);
-                calculateSelectedRouteBtn.style.display = 'none'; // Cacher si aucun POI
-                return;
-            }
-
-            // Afficher le premier lot et les marqueurs
-            displayMorePois(); // Appelle sans argument pour utiliser currentFilteredPoiList
-
-            // Assurer que la couche cluster est visible si la case est cochée
-            if (togglePoiLayerCheckbox.checked && !map.hasLayer(poiMarkerClusterGroup)) {
-                map.addLayer(poiMarkerClusterGroup);
-            } else if (!togglePoiLayerCheckbox.checked && map.hasLayer(poiMarkerClusterGroup)) {
-                 map.removeLayer(poiMarkerClusterGroup); // Cacher si décoché au départ
-            }
-
-             // Afficher le bouton de calcul final seulement si on a trouvé des POI (même s'ils sont tous filtrés initialement)
-            calculateSelectedRouteBtn.style.display = 'block';
+             if (!currentFilteredPoiList || currentFilteredPoiList.length === 0) {
+                 if (fullPoiList.length > 0) poiListDiv.innerHTML = '<p class="info">Aucun POI ne correspond aux filtres actifs.</p>';
+                 else poiListDiv.innerHTML = '<p class="info">Aucun POI trouvé par Overpass pour ces critères.</p>';
+                 loadMoreBtn.style.display = 'none';
+                 updatePoiCount(0, 0);
+                 calculateSelectedRouteBtn.style.display = 'none';
+                 return;
+             }
+             displayMorePois(); // Affiche premier lot liste + TOUS marqueurs cluster
+             if (togglePoiLayerCheckbox.checked && !map.hasLayer(poiMarkerClusterGroup)) map.addLayer(poiMarkerClusterGroup);
+             else if (!togglePoiLayerCheckbox.checked && map.hasLayer(poiMarkerClusterGroup)) map.removeLayer(poiMarkerClusterGroup);
+             calculateSelectedRouteBtn.style.display = 'block';
         }
 
-        /** Ajoute le prochain lot de POI à la liste et crée tous les marqueurs pour le cluster. */
+        /** Ajoute POI à la liste + crée TOUS les marqueurs au 1er appel */
         function displayMorePois() {
-            const sourceList = currentFilteredPoiList; // Utiliser la liste filtrée mémorisée
+            const sourceList = currentFilteredPoiList;
             const isInitialDisplay = (displayedPoiCount === 0);
-
             const startIndex = displayedPoiCount;
             const endIndex = Math.min(startIndex + POI_LIST_LIMIT, sourceList.length);
+            console.log(`Affichage liste POIs ${startIndex} à ${endIndex-1} / ${sourceList.length} filtrés.`);
+            if (startIndex >= sourceList.length && !isInitialDisplay) { loadMoreBtn.style.display = 'none'; return; }
 
-            console.log(`Affichage POIs ${startIndex} à ${endIndex-1} sur ${sourceList.length} filtrés.`);
-
-            if (startIndex >= sourceList.length && !isInitialDisplay) {
-                 console.log("Tous les POI filtrés sont déjà dans la liste.");
-                 loadMoreBtn.style.display = 'none';
-                 return;
-            }
-
-            // Préparer les éléments de liste et les marqueurs
             const listFragment = document.createDocumentFragment();
-            const markersToAdd = [];
-
+            // --- Création marqueurs (uniquement au premier appel) ---
+            if (isInitialDisplay) {
+                poiMarkers = [];
+                const markersToAdd = sourceList.map(poi => {
+                    try {
+                        if (!poi || poi.coordinates?.[0] == null || poi.coordinates?.[1] == null) {
+                             console.warn("POI invalide pour marqueur ignoré:", poi); return null;
+                         }
+                        const isSelected = selectedPois.some(p => p.id === poi.id);
+                        const initialIcon = isSelected ? selectedIcon : defaultIcon;
+                        const marker = L.marker([poi.coordinates[1], poi.coordinates[0]], { icon: initialIcon })
+                            .bindPopup(`<b>${poi.name || `POI #${poi.id}`}</b><br><small>ID: ${poi.id}</small>`);
+                        marker.poiData = poi;
+                        marker.on('click', (e) => { togglePoiSelection(null, e.target); });
+                        return marker;
+                    } catch (e) { console.error("Erreur création marqueur:", poi, e); return null; }
+                }).filter(m => m !== null);
+                poiMarkerClusterGroup.addLayers(markersToAdd);
+                poiMarkers = markersToAdd;
+                console.log(`${poiMarkers.length} marqueurs ajoutés au cluster.`);
+            }
+            // --- Création éléments liste (pour le lot actuel) ---
             for (let i = startIndex; i < endIndex; i++) {
                 const poi = sourceList[i];
-                // Ajouter à la liste latérale (fragment)
+                 if (!poi) continue;
                 const poiDiv = document.createElement('div');
                 poiDiv.classList.add('poi-item');
-                if (selectedPois.some(p => p.id === poi.id)) {
-                    poiDiv.classList.add('selected');
-                }
+                if (selectedPois.some(p => p.id === poi.id)) poiDiv.classList.add('selected');
                 poiDiv.textContent = poi.name || `POI #${poi.id}`;
-                poiDiv.title = `ID: ${poi.id}\nTags: ${JSON.stringify(poi.tags, null, 1)}`; // Tooltip avec infos
+                poiDiv.title = `ID: ${poi.id}\nTags: ${JSON.stringify(poi.tags, null, 1)}`;
                 poiDiv.dataset.poiId = poi.id;
-                poiDiv.dataset.coords = JSON.stringify(poi.coordinates);
-                poiDiv.dataset.name = poi.name || `POI #${poi.id}`;
                 poiDiv.addEventListener('click', togglePoiSelection);
                 listFragment.appendChild(poiDiv);
             }
-             // Ajouter tous les marqueurs de la liste filtrée au cluster lors du premier affichage seulement
-             // pour éviter de recréer/dupliquer les marqueurs sur "Afficher plus"
-             if (isInitialDisplay) {
-                 sourceList.forEach(poi => {
-                    try {
-                        const marker = L.marker([poi.coordinates[1], poi.coordinates[0]])
-                            .bindPopup(`<b>${poi.name || `POI #${poi.id}`}</b><br><small>ID: ${poi.id}</small>`);
-                        marker.poiData = poi;
-                        marker.on('click', (e) => {
-                             const correspondingDiv = poiListDiv.querySelector(`.poi-item[data-poi-id="${e.target.poiData.id}"]`);
-                             if (correspondingDiv) togglePoiSelection({ currentTarget: correspondingDiv });
-                             // Ouvrir popup en plus?
-                             // e.target.openPopup();
-                         });
-                        markersToAdd.push(marker); // Ajouter au tableau temporaire
-                    } catch (e) {
-                         console.error("Erreur création marqueur pour POI:", poi, e);
-                    }
-                 });
-                 poiMarkerClusterGroup.addLayers(markersToAdd); // Ajout groupé plus performant
-                 poiMarkers = markersToAdd; // Garder référence à tous les marqueurs créés
-             }
-
-
-            // Ajouter le fragment à la liste réelle du DOM
+            // Si c'est le premier chargement et la div est vide, remplacer le message de chargement
+            if (isInitialDisplay && poiListDiv.querySelector('.loading')) {
+                poiListDiv.innerHTML = '';
+            }
             poiListDiv.appendChild(listFragment);
-
             displayedPoiCount = endIndex;
             updatePoiCount(displayedPoiCount, sourceList.length);
-
-            // Gérer le bouton "Afficher plus"
             loadMoreBtn.style.display = (displayedPoiCount < sourceList.length) ? 'block' : 'none';
-
-             // Ajuster la vue aux POIs lors du premier affichage seulement
+            // Ajuster vue carte au 1er affichage
              if (isInitialDisplay && poiMarkers.length > 0) {
-                 try {
-                     // Donner la priorité au zoom sur les POI plutôt que sur la route calculée initialement
-                     // const bounds = poiMarkerClusterGroup.getBounds();
-                     // if (bounds.isValid()) { map.fitBounds(bounds.pad(0.1)); }
-                 } catch (e) { console.warn("Impossible d'ajuster les limites aux POI.", e); }
-             } else if (isInitialDisplay && sourceList.length === 0) {
-                 // Si aucun POI après filtre, recentrer carte ?
-                 // map.setView(MAP_DEFAULT_CENTER, MAP_DEFAULT_ZOOM);
+                try { map.fitBounds(poiMarkerClusterGroup.getBounds().pad(0.1)); }
+                catch (e) { console.warn("Impossible d'ajuster limites aux POI.", e); }
              }
         }
 
-        /** Met à jour le texte du compteur de POI */
+        /** Met à jour compteur POI */
         function updatePoiCount(displayed, totalFiltered) {
-             poiCountSpan.textContent = `(${displayed} affichés / ${totalFiltered} filtrés / ${fullPoiList.length} total)`;
+             if(poiCountSpan) poiCountSpan.textContent = `(${displayed} affichés / ${totalFiltered} filtrés / ${fullPoiList.length} total)`;
         }
 
-        /** Bascule la sélection d'un POI */
-        function togglePoiSelection(event) {
-            if (!event || !event.currentTarget) return;
-            const poiDiv = event.currentTarget;
-            const poiId = poiDiv.dataset.poiId;
-            // Retrouver les données complètes du POI depuis fullPoiList ou currentFilteredPoiList
-             const poiDataFromList = currentFilteredPoiList.find(p => p.id == poiId) || fullPoiList.find(p => p.id == poiId);
-             if (!poiDataFromList) {
-                 console.error("Impossible de retrouver les données du POI cliqué:", poiId);
-                 return;
-             }
-             // Utiliser une copie pour éviter modif accidentelle? Pour l'instant, ok.
-             const poiData = poiDataFromList; // { id, name, coordinates, tags }
+        /** Bascule sélection POI (liste ou carte) + màj icône */
+        function togglePoiSelection(event, clickedMarker = null) {
+            let poiId, poiData, targetMarker, poiDiv;
+            if (clickedMarker) { // Clic carte
+                poiData = clickedMarker.poiData;
+                if (!poiData) return;
+                poiId = poiData.id;
+                targetMarker = clickedMarker;
+                poiDiv = poiListDiv.querySelector(`.poi-item[data-poi-id="${poiId}"]`);
+            } else if (event && event.currentTarget) { // Clic liste
+                poiDiv = event.currentTarget;
+                poiId = poiDiv.dataset.poiId;
+                if (!poiId) return;
+                poiData = currentFilteredPoiList.find(p => p.id == poiId) || fullPoiList.find(p => p.id == poiId);
+                if (!poiData) { console.error("Données POI non trouvées pour div:", poiId); return; }
+                targetMarker = poiMarkers.find(m => m.poiData && m.poiData.id == poiId);
+            } else { return; }
 
             const index = selectedPois.findIndex(p => p.id == poiId);
             if (index > -1) { // Désélectionner
                 selectedPois.splice(index, 1);
-                poiDiv.classList.remove('selected');
+                if (poiDiv) poiDiv.classList.remove('selected');
+                if (targetMarker) targetMarker.setIcon(defaultIcon);
+                console.log(`POI désélectionné: ${poiData.name}`);
             } else { // Sélectionner
                 selectedPois.push(poiData);
-                poiDiv.classList.add('selected');
+                if (poiDiv) poiDiv.classList.add('selected');
+                if (targetMarker) targetMarker.setIcon(selectedIcon);
+                console.log(`POI sélectionné: ${poiData.name}`);
+                if (clickedMarker && poiDiv) {
+                    poiDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
             }
             console.log(`${selectedPois.length} POIs sélectionnés:`, selectedPois.map(p=>p.name));
         }
 
-        /** Affiche ou masque la couche de clusters de POI */
+        /** Affiche/Masque couche POI cluster */
         function togglePoiLayerVisibility() {
+            if (!map || !poiMarkerClusterGroup) return;
             if (togglePoiLayerCheckbox.checked) {
-                if (!map.hasLayer(poiMarkerClusterGroup)) {
-                    map.addLayer(poiMarkerClusterGroup);
-                    console.log("Couche POI affichée.");
-                }
+                if (!map.hasLayer(poiMarkerClusterGroup)) { map.addLayer(poiMarkerClusterGroup); console.log("Couche POI affichée."); }
             } else {
-                if (map.hasLayer(poiMarkerClusterGroup)) {
-                    map.removeLayer(poiMarkerClusterGroup);
-                    console.log("Couche POI masquée.");
-                }
+                if (map.hasLayer(poiMarkerClusterGroup)) { map.removeLayer(poiMarkerClusterGroup); console.log("Couche POI masquée."); }
             }
         }
 
-        /** Applique les filtres et réaffiche les POI */
+        /** Applique filtres et réaffiche POI */
         function applyPoiFilters() {
-            console.log("Application des filtres POI...");
+            console.log("Application filtres POI...");
             currentFilteredPoiList = fullPoiList.filter(applySinglePoiFilter);
-            // Réinitialiser l'affichage avec la liste filtrée
             displayPoisAndEnableSelection(currentFilteredPoiList);
         }
 
-        /** Fonction de filtrage pour un seul POI basée sur les cases cochées */
+        /** Filtre pour un POI */
         function applySinglePoiFilter(poi) {
             const checkedFilters = Array.from(poiFilterCheckboxes).filter(cb => cb.checked);
-            if (checkedFilters.length === 0) return true; // Si rien coché, tout afficher
+            if (checkedFilters.length === 0) return true;
+             if (!poi) return false;
 
             const poiNameLower = (poi.name || '').toLowerCase();
             const poiTagsStringLower = JSON.stringify(poi.tags || {}).toLowerCase();
@@ -875,74 +826,182 @@
                 const keywords = checkbox.value.split(',');
                 for (const keyword of keywords) {
                     const keywordLower = keyword.toLowerCase().trim();
-                    if (keywordLower && (poiNameLower.includes(keywordLower) || poiTagsStringLower.includes(`"${keywordLower}"`) || poiTagsStringLower.includes(`=${keywordLower}"`))) {
-                        return true;
+                    if (keywordLower) {
+                        if (poiNameLower.includes(keywordLower)) return true;
+                        // Recherche dans les tags (plus robuste avec regex mais on évite pour l'instant)
+                        // Cherche "clé":"keyword" OU "keyword":"valeur"
+                        try {
+                           const regex = new RegExp(`"([^"]+)":"${keywordLower}"|"${keywordLower}":"([^"]+)"`);
+                            if (regex.test(poiTagsStringLower)) return true;
+                         } catch (e) { console.warn(`Regex invalide pour keyword: ${keywordLower}`, e); }
                     }
                 }
-            }
-            return false; // Ne correspond à aucun filtre actif
+            } return false;
         }
 
-        /** Affiche l'itinéraire final et les instructions */
+        /** Affiche itinéraire et instructions */
         function displayRouteAndInstructions(routeData) {
-             if (routeLayer) map.removeLayer(routeLayer);
-             const routeStyle = { color: "#0056b3", weight: 6, opacity: 0.8 }; // Bleu foncé
+            if (routeLayer) map.removeLayer(routeLayer);
+            const routeStyle = { color: ROUTE_COLOR, weight: 6, opacity: 0.85 };
              try {
-                 routeLayer = L.geoJSON(routeData, { style: routeStyle }).addTo(map);
-                 map.fitBounds(routeLayer.getBounds().pad(0.1));
+                if (!routeData || !routeData.features || routeData.features.length === 0) throw new Error("Données GeoJSON invalides");
+                routeLayer = L.geoJSON(routeData, { style: routeStyle }).addTo(map);
+                map.fitBounds(routeLayer.getBounds().pad(0.1));
              } catch(e) {
-                 console.error("Erreur lors de l'affichage de la route GeoJSON:", e);
-                 instructionsDiv.innerHTML = "<p class='error'>Erreur lors de l'affichage de la route.</p>";
-                 return;
+                console.error("Erreur affichage route GeoJSON:", e);
+                instructionsDiv.innerHTML = "<p class='error'>Erreur affichage route.</p>"; return;
              }
-
             const segments = routeData?.features?.[0]?.properties?.segments || [];
-            if (segments.length > 0) {
-                 instructionsDiv.innerHTML = '<h4>Instructions Détaillées :</h4><ol>';
-                 segments.forEach((segment, segIndex) => {
-                     const targetName = selectedPois[segIndex]?.name || (segIndex === segments.length - 1 ? 'Destination Finale' : `Waypoint ${segIndex + 1}`);
-                     instructionsDiv.innerHTML += `<li style="margin-top: 5px;"><strong>Vers ${targetName}</strong> (~${(segment.distance/1000).toFixed(1)} km)</li>`;
-                     (segment.steps || []).forEach(step => {
-                         instructionsDiv.innerHTML += `<li style="margin-left: 15px; font-size: 0.95em;">${step.instruction} (${(step.distance / 1000).toFixed(1)} km)</li>`;
-                     });
-                 });
-                 instructionsDiv.innerHTML += '</ol>';
-            } else {
-                 instructionsDiv.innerHTML = '<p class="info">Aucune instruction détaillée disponible.</p>';
+            if (instructionsDiv) {
+                if (segments.length > 0) {
+                     instructionsDiv.innerHTML = '<h4>Instructions Détaillées :</h4><ol>';
+                     segments.forEach((segment, segIndex) => {
+                        const targetName = selectedPois[segIndex]?.name || (segIndex === segments.length - 1 ? 'Destination Finale' : `Waypoint ${segIndex + 1}`);
+                        instructionsDiv.innerHTML += `<li style="margin-top: 5px;"><strong>Étape ${segIndex + 1}: Vers ${targetName}</strong> (~${(segment.distance/1000).toFixed(1)} km / ${Math.round(segment.duration/60)} min)</li>`;
+                         (segment.steps || []).forEach(step => {
+                             if (!step.instruction.toLowerCase().startsWith("continuez sur") || step.distance > 500) {
+                                 instructionsDiv.innerHTML += `<li style="margin-left: 15px;">${step.instruction} (${(step.distance / 1000).toFixed(1)} km)</li>`;
+                             }
+                        });
+                    });
+                    instructionsDiv.innerHTML += '</ol>';
+                } else { instructionsDiv.innerHTML = '<p class="info">Aucune instruction détaillée.</p>'; }
             }
         }
 
-        /** Nettoie les résultats précédents (carte et panneaux) */
+        /** Nettoie résultats précédents */
         function clearPreviousResults() {
-            console.log("Nettoyage des résultats précédents...");
-            if (routeLayer) { map.removeLayer(routeLayer); routeLayer = null; }
-            poiMarkerClusterGroup.clearLayers();
-            poiMarkers = [];
-            selectedPois = [];
-            fullPoiList = [];
-            currentFilteredPoiList = [];
-            displayedPoiCount = 0;
-            poiListDiv.innerHTML = '<p class="loading">Prêt.</p>';
-            summaryDiv.innerHTML = '<p class="loading">Prêt.</p>';
-            instructionsDiv.innerHTML = '';
-            poiCountSpan.textContent = '';
-            loadMoreBtn.style.display = 'none';
-            calculateSelectedRouteBtn.style.display = 'none';
-            if (!togglePoiLayerCheckbox.checked) {
-                 togglePoiLayerCheckbox.checked = true;
-                 if (!map.hasLayer(poiMarkerClusterGroup)) map.addLayer(poiMarkerClusterGroup);
-            }
-            setButtonsDisabled(false); // S'assurer que les boutons sont réactivés
+             console.log("Nettoyage...");
+             if (routeLayer) { map.removeLayer(routeLayer); routeLayer = null; }
+             if (poiMarkerClusterGroup) poiMarkerClusterGroup.clearLayers();
+             poiMarkers = []; selectedPois = []; fullPoiList = []; currentFilteredPoiList = []; displayedPoiCount = 0;
+             poiListDiv.innerHTML = '<p class="loading">Prêt.</p>';
+             summaryDiv.innerHTML = '<p class="loading">Prêt.</p>';
+             instructionsDiv.innerHTML = ''; poiCountSpan.textContent = '';
+             loadMoreBtn.style.display = 'none'; calculateSelectedRouteBtn.style.display = 'none';
+             if (togglePoiLayerCheckbox && !togglePoiLayerCheckbox.checked) {
+                 togglePoiLayerCheckbox.checked = true; if (map && !map.hasLayer(poiMarkerClusterGroup)) map.addLayer(poiMarkerClusterGroup);
+             }
+             setButtonsDisabled(false); // S'assurer que tout est réactivé
         }
 
-        /** Active/Désactive les boutons principaux */
-        function setButtonsDisabled(disabled) {
-             if(planBtn) planBtn.disabled = disabled;
-             if(calculateSelectedRouteBtn) calculateSelectedRouteBtn.disabled = disabled;
-             if(loadMoreBtn) loadMoreBtn.disabled = disabled; // Désactiver aussi "Afficher plus" pendant chargement
-             // Désactiver aussi les filtres pendant le chargement ?
-             poiFilterCheckboxes.forEach(cb => cb.disabled = disabled);
-             togglePoiLayerCheckbox.disabled = disabled;
+        /** Active/Désactive boutons et contrôles + gère spinner */
+        function setButtonsDisabled(disabled, buttonElement = null) {
+            const buttonsToToggle = buttonElement ? [buttonElement] : [planBtn, calculateSelectedRouteBtn, loadMoreBtn];
+
+            buttonsToToggle.forEach(btn => {
+                if (btn) {
+                    btn.disabled = disabled;
+                    if(disabled && buttonsToToggle.length === 1) {
+                       btn.classList.add('loading');
+                    } else {
+                       btn.classList.remove('loading');
+                    }
+                }
+            });
+
+             if (!buttonElement) {
+                 [planBtn, calculateSelectedRouteBtn, loadMoreBtn].forEach(btn => { if(btn) btn.disabled = disabled; });
+                 poiFilterCheckboxes.forEach(cb => cb.disabled = disabled);
+                 if (togglePoiLayerCheckbox) togglePoiLayerCheckbox.disabled = disabled;
+             }
+        }
+
+        // --- Fonctions Gestionnaires Principales ---
+
+        /** Gère clic "1. Trouver POI" */
+        async function handlePlanning() {
+            console.log("Début planification...");
+            clearPreviousResults();
+            const btn = planBtn;
+            setButtonsDisabled(true, btn);
+            setButtonsDisabled(true);
+
+            const startAddress = startInput.value.trim();
+            const endAddress = endInput.value.trim();
+            const interests = interestsInput.value.trim();
+
+            if (!startAddress || !endAddress || !interests) {
+                summaryDiv.innerHTML = '<p class="error">Veuillez entrer Départ, Arrivée et Intérêts.</p>';
+                setButtonsDisabled(false); return;
+            }
+            if (ORS_API_KEY.length < 10 || GEMINI_API_KEY.length < 10 || ORS_API_KEY.includes('XXX') || GEMINI_API_KEY.includes('XXX')) {
+                 summaryDiv.innerHTML = '<p class="error">ERREUR: Clés API non configurées.</p>';
+                 setButtonsDisabled(false); return;
+            }
+
+            summaryDiv.innerHTML = '<p class="loading info">1/4 Calcul zone...</p>';
+            poiListDiv.innerHTML = '<p class="loading">Calcul zone...</p>'; poiCountSpan.textContent = '';
+
+            try {
+                const bbox = await getBoundingBox(startAddress, endAddress);
+                if (!bbox) throw new Error("Impossible de définir la zone (échec géocodage?).");
+
+                summaryDiv.innerHTML = '<p class="loading info">2/4 Génération requête IA...</p>';
+                const overpassQuery = await generateOverpassQueryFromAI(interests, bbox);
+
+                summaryDiv.innerHTML = '<p class="loading info">3/4 Recherche POI Overpass (peut être long)...</p>';
+                poiListDiv.innerHTML = '<p class="loading">Interrogation Overpass API...</p>';
+                fullPoiList = await fetchPoisFromOverpass(overpassQuery);
+
+                summaryDiv.innerHTML = `<p class="success">4/4 Recherche terminée: ${fullPoiList.length} POI trouvés.</p>`;
+                applyPoiFilters();
+
+                 if (currentFilteredPoiList.length === 0 && fullPoiList.length > 0) {
+                     summaryDiv.innerHTML += '<br><p class="info">Aucun POI trouvé ne correspond aux filtres actifs par défaut.</p>';
+                 } else if (fullPoiList.length === 0) {
+                     summaryDiv.innerHTML += '<br><p class="info">Aucun POI trouvé dans la zone pour ces critères via Overpass.</p>';
+                 }
+
+            } catch (error) {
+                console.error("Erreur handlePlanning:", error);
+                const errorHtml = `<p class="error">ERREUR ÉTAPE 1: ${error.message || 'Erreur inattendue.'}</p>`;
+                summaryDiv.innerHTML = errorHtml;
+                poiListDiv.innerHTML = errorHtml.replace("ÉTAPE 1", "Recherche POI");
+                fullPoiList = []; currentFilteredPoiList = []; updatePoiCount(0, 0);
+            } finally {
+                setButtonsDisabled(false);
+            }
+        }
+
+        /** Gère clic "2. Calculer Itinéraire Final" */
+        async function handleRouteCalculationFinal() {
+            if (selectedPois.length === 0) {
+                alert("Sélectionnez au moins un POI avant de calculer l'itinéraire."); return;
+            }
+            const btn = calculateSelectedRouteBtn;
+            setButtonsDisabled(true, btn);
+            setButtonsDisabled(true);
+
+            const startAddress = startInput.value.trim();
+            const endAddress = endInput.value.trim();
+            const profile = profileSelect.value;
+            const routePreference = routePrefSelect.value;
+            const interests = interestsInput.value.trim();
+
+            summaryDiv.innerHTML = `<p class="loading info">Calcul itinéraire via ${selectedPois.length} POI...</p>`;
+            instructionsDiv.innerHTML = '';
+
+            try {
+                const routeData = await getRouteFromOrs(startAddress, endAddress, selectedPois, profile, routePreference);
+                displayRouteAndInstructions(routeData);
+
+                summaryDiv.innerHTML = '<p class="loading info">Génération résumé IA...</p>';
+                const aiSummary = await getAiRouteSummary(interests, routeData);
+
+                const routeSummary = routeData?.features?.[0]?.properties?.summary;
+                const distanceKm = routeSummary ? (routeSummary.distance / 1000).toFixed(1) : '?';
+                const durationMin = routeSummary ? Math.round(routeSummary.duration / 60) : '?';
+                summaryDiv.innerHTML = `<p class="success"><strong>Itinéraire:</strong> ${distanceKm} km / ${durationMin} min.</p>${aiSummary}`;
+
+            } catch (error) {
+                console.error("Erreur handleRouteCalculationFinal:", error);
+                summaryDiv.innerHTML = `<p class="error">ERREUR ÉTAPE 2: ${error.message || 'Erreur calcul itinéraire.'}</p>`;
+                if (routeLayer) { map.removeLayer(routeLayer); routeLayer = null; }
+                instructionsDiv.innerHTML = '';
+            } finally {
+                setButtonsDisabled(false);
+            }
         }
 
     </script>
