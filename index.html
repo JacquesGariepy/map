@@ -16,13 +16,21 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
+    <script src="i18n.js"></script>
     <link rel="stylesheet" href="style.css">
+
 </head>
 <body>
     <div id="container">
         <div id="sidebar">
              
-           
+            <div id="languageSelector">
+                <label for="langSelect" data-i18n="select_language">Langue / Language</label>
+                <select id="langSelect">
+                    <option value="fr">Français</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
 
             <h3>Planificateur d'Itinéraire IA</h3>
 
@@ -344,6 +352,185 @@
             clearPreviousResults();
         });
 
+
+        // ########################################################################
+        // ### GESTION DE LA LANGUE
+        // ########################################################################
+        function initLanguageSelector() {
+            const langSelect = document.getElementById('langSelect');
+            if (!langSelect) return;
+            
+            // Définir la langue actuelle dans le sélecteur
+            const currentLang = window.i18n.getCurrentLanguage();
+            langSelect.value = currentLang;
+            
+            // Écouteur d'événement pour le changement de langue
+            langSelect.addEventListener('change', (e) => {
+                const newLang = e.target.value;
+                if (window.i18n.setLanguage(newLang)) {
+                    applyUiTranslations();
+                }
+            });
+        }
+
+        function applyUiTranslations() {
+            // Appliquer les traductions via le module i18n
+            window.i18n.applyTranslations();
+            
+            // Mettre à jour les textes non-couverts par data-i18n
+            const currentLang = window.i18n.getCurrentLanguage();
+            const __ = (key, params) => window.i18n.__(key, currentLang, params);
+            
+            // Boutons
+            if (planBtn) planBtn.querySelector('.button-text').textContent = __('find_poi');
+            if (calculateSelectedRouteBtn) calculateSelectedRouteBtn.querySelector('.button-text').textContent = __('calculate_route');
+            if (locateMeBtn) locateMeBtn.querySelector('span').textContent = __('locate_me');
+            if (loadMoreBtn) loadMoreBtn.querySelector('i + span').textContent = __('show_more');
+            if (exportGpxBtn) exportGpxBtn.querySelector('i + span').textContent = __('export_gpx');
+            
+            // Champs de formulaire
+            if (startInput) startInput.placeholder = __('start_placeholder');
+            if (endInput) endInput.placeholder = __('destination_placeholder');
+            if (interestsInput) interestsInput.placeholder = __('interests_placeholder');
+            
+            // Labels
+            const labels = {
+                'start': __('start'),
+                'end': __('destination'),
+                'interests': __('interests'),
+                'profile': __('travel_mode'),
+                'routePref': __('route_preference'),
+                'tripDays': __('multi_day')
+            };
+            
+            // Mettre à jour les labels
+            for (const [id, text] of Object.entries(labels)) {
+                const labelElement = document.querySelector(`label[for="${id}"]`);
+                if (labelElement) labelElement.textContent = text + ':';
+            }
+            
+            // Options des sélecteurs
+            if (profileSelect) {
+                const profileOptions = {
+                    'driving-car': __('car'),
+                    'driving-hgv': __('truck'),
+                    'cycling-regular': __('bike'),
+                    'foot-walking': __('walk')
+                };
+                
+                Array.from(profileSelect.options).forEach(option => {
+                    if (profileOptions[option.value]) {
+                        option.textContent = profileOptions[option.value];
+                    }
+                });
+            }
+            
+            if (routePrefSelect) {
+                const routePrefOptions = {
+                    'FASTEST': __('fastest'),
+                    'SHORTEST': __('shortest'),
+                    'AVOID_HIGHWAYS': __('avoid_highways'),
+                    'AVOID_TOLLS': __('avoid_tolls')
+                };
+                
+                Array.from(routePrefSelect.options).forEach(option => {
+                    if (routePrefOptions[option.value]) {
+                        option.textContent = routePrefOptions[option.value];
+                    }
+                });
+            }
+            
+            // Titres principaux
+            const h3Element = document.querySelector('#sidebar > h3');
+            if (h3Element) h3Element.textContent = __('app_title');
+            
+            // Sous-titres
+            const poiHeader = document.querySelector('#poiPanel > h4');
+            if (poiHeader) poiHeader.innerHTML = __('poi_header') + ' <span id="poiCount">' + (poiCountSpan ? poiCountSpan.textContent : '') + '</span>';
+            
+            const resultsHeader = document.querySelector('#resultsPanel > h4');
+            if (resultsHeader) resultsHeader.textContent = __('route_summary_header');
+            
+            // Filtres POI
+            document.querySelectorAll('#poiFilters label').forEach(label => {
+                const labelText = label.textContent.trim();
+                
+                if (labelText.includes('Vues & Paysages') || labelText.includes('Views & Landscapes')) {
+                    label.title = __('poi_filter_views_tooltip');
+                    label.childNodes[1].textContent = __('views_landscapes');
+                } else if (labelText.includes('Parcs/Nature') || labelText.includes('Parks/Nature')) {
+                    label.title = __('poi_filter_parks_tooltip');
+                    label.childNodes[1].textContent = __('parks_nature');
+                } else if (labelText.includes('Terroir/Marchés') || labelText.includes('Local Products/Markets')) {
+                    label.title = __('poi_filter_markets_tooltip');
+                    label.childNodes[1].textContent = __('local_markets');
+                } else if (labelText.includes('Oiseaux/Faune') || labelText.includes('Birds/Wildlife')) {
+                    label.title = __('poi_filter_wildlife_tooltip');
+                    label.childNodes[1].textContent = __('birds_wildlife');
+                } else if (labelText.includes('Histoire/Culture') || labelText.includes('History/Culture')) {
+                    label.title = __('poi_filter_history_tooltip');
+                    label.childNodes[1].textContent = __('history_culture');
+                } else if (labelText.includes('Eau/Plages') || labelText.includes('Water/Beaches')) {
+                    label.title = __('poi_filter_water_tooltip');
+                    label.childNodes[1].textContent = __('water_beaches');
+                } else if (labelText.includes('Villages')) {
+                    label.title = __('poi_filter_villages_tooltip');
+                    label.childNodes[1].textContent = __('villages');
+                }
+            });
+            
+            // Afficher POI sur la carte
+            const togglePoiLabel = document.querySelector('#showPoiToggle label');
+            if (togglePoiLabel) togglePoiLabel.childNodes[1].textContent = __('show_poi_on_map');
+            
+            // Mettre à jour les textes dans les zones d'information
+            updateInfoTexts();
+        }
+
+        function updateInfoTexts() {
+            const currentLang = window.i18n.getCurrentLanguage();
+            const __ = (key, params) => window.i18n.__(key, currentLang, params);
+            
+            // Mettre à jour les messages dans les zones d'information seulement si elles contiennent du texte standard
+            if (poiListDiv) {
+                const text = poiListDiv.textContent.trim();
+                if (text === 'Prêt à chercher des POI.' || text === 'Ready to search for POIs.') {
+                    poiListDiv.textContent = __('ready_poi_search');
+                }
+            }
+            
+            if (summaryDiv) {
+                const text = summaryDiv.textContent.trim();
+                if (text === 'Prêt à calculer l\'itinéraire.' || text === 'Ready to calculate route.') {
+                    summaryDiv.textContent = __('ready_route_calc');
+                }
+            }
+        }
+
+        // Ajouter l'initialisation du sélecteur de langue à l'événement DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // L'appel original de loadSettings() reste
+            loadSettings();
+            
+            // Initialiser le sélecteur de langue après le chargement des paramètres
+            if (typeof window.i18n !== 'undefined') {
+                initLanguageSelector();
+                applyUiTranslations();
+            } else {
+                console.error("Module i18n non chargé. La gestion des langues ne sera pas disponible.");
+            }
+            
+            // Le reste du code d'initialisation reste inchangé
+            if (map) {
+                map.setView(MAP_DEFAULT_CENTER, MAP_DEFAULT_ZOOM);
+                if (togglePoiLayerCheckbox && togglePoiLayerCheckbox.checked) {
+                    map.addLayer(poiMarkerClusterGroup);
+                }
+                setTimeout(() => { map.invalidateSize() }, 100);
+            }
+            
+            // ... le reste du code d'événement DOMContentLoaded ...
+        });
         // ########################################################################
         // ### GESTION DES PARAMÈTRES (LocalStorage)
         // ########################################################################
