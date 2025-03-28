@@ -1,0 +1,583 @@
+
+/* --- Variables de Couleurs et Design --- */
+:root {
+    --font-main: 'Inter', sans-serif;
+    --bg-body: #F9FAFB; /* Gris très clair */
+    --bg-sidebar: #FFFFFF;
+    --bg-input: #FFFFFF;
+    --bg-hover-light: #F3F4F6; /* Gris clair pour hover */
+    --bg-selected-light: #D1FAE5; /* Vert très clair pour sélection */
+    --bg-config-panel: rgba(255, 255, 255, 0.98); /* Fond légèrement transparent */
+
+    --text-primary: #1F2937; /* Gris très foncé */
+    --text-secondary: #6B7280; /* Gris moyen */
+    --text-placeholder: #9CA3AF; /* Gris clair */
+    --text-white: #FFFFFF;
+
+    --border-color: #E5E7EB; /* Gris clair pour bordures */
+    --border-focus: var(--color-primary);
+    --border-selected: var(--color-secondary);
+
+    --color-primary: #3B82F6; /* Bleu primaire */
+    --color-primary-dark: #2563EB; /* Bleu primaire foncé (hover) */
+    --color-secondary: #10B981; /* Vert secondaire (succès, sélection) */
+    --color-secondary-dark: #059669; /* Vert secondaire foncé (hover) */
+    --color-danger: #EF4444; /* Rouge pour erreurs */
+    --color-danger-light: #FEE2E2; /* Fond rouge clair pour erreurs */
+    --color-info: #60A5FA; /* Bleu clair pour info */
+    --color-warning: #F59E0B; /* Orange pour avertissements */
+    --color-warning-light: #FEF3C7; /* Fond orange clair */
+
+    --border-radius: 6px; /* Rayon pour coins arrondis */
+    --box-shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --box-shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --box-shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    --spinner-size: 1.2em; /* Taille du spinner */
+}
+
+/* --- Styles de Base --- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-main);
+    background-color: var(--bg-body);
+    color: var(--text-primary);
+    font-size: 16px;
+    line-height: 1.5;
+    overflow: hidden; /* Empêche scroll global */
+}
+
+#container {
+    display: flex;
+    height: 100%;
+}
+
+/* --- Sidebar --- */
+#sidebar {
+    width: 450px; /* Légèrement plus large */
+    position: relative; /* Pour positionner le panneau config */
+    padding: 20px;
+    background-color: var(--bg-sidebar);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border-color);
+    box-shadow: var(--box-shadow-light);
+    transition: width 0.3s ease; /* Pour future responsivité */
+    z-index: 10; /* Pour être au-dessus de la carte mais sous le panneau config */
+}
+
+#map {
+    flex-grow: 1;
+    height: 100%;
+    background-color: #E5E7EB;
+}
+
+h3 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+}
+
+h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+/* --- Formulaires --- */
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+input[type="text"], input[type="password"], input[type="number"], select, textarea {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 15px;
+    font-size: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: var(--bg-input);
+    color: var(--text-primary);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+input[type="text"]::placeholder,
+input[type="password"]::placeholder,
+textarea::placeholder {
+    color: var(--text-placeholder);
+}
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); /* Ombre focus bleue */
+}
+input[type="color"] {
+    height: 40px;
+    padding: 5px;
+    cursor: pointer;
+    width: 60px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+select {
+    appearance: none; /* Style custom flèche si désiré via background-image */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 1.25em 1.25em;
+    padding-right: 2.5rem;
+}
+
+/* --- Boutons --- */
+button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Espace entre icône et texte */
+    padding: 10px 18px;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    width: 100%;
+    margin-bottom: 10px;
+}
+button i {
+    font-size: 0.9em;
+}
+
+#locateMeBtn {
+        background-color: #4ade80; /* Vert Clair */
+        color: var(--text-white);
+        margin-bottom: 15px; /* Plus d'espace */
+}
+#locateMeBtn:hover:not(:disabled) {
+    background-color: #22c55e; /* Vert plus foncé */
+}
+
+#planRouteBtn {
+    background-color: var(--color-primary);
+    color: var(--text-white);
+}
+#planRouteBtn:hover:not(:disabled) {
+    background-color: var(--color-primary-dark);
+    box-shadow: var(--box-shadow-light);
+}
+
+#calculateSelectedRouteBtn {
+    background-color: var(--color-secondary);
+    color: var(--text-white);
+    margin-top: 15px;
+}
+#calculateSelectedRouteBtn:hover:not(:disabled) {
+    background-color: var(--color-secondary-dark);
+    box-shadow: var(--box-shadow-light);
+}
+
+#loadMoreBtn {
+    background-color: var(--text-secondary);
+    color: var(--text-white);
+    font-size: 0.9rem;
+    padding: 8px 15px;
+    margin-top: 10px;
+    width: auto; /* Ne prend pas toute la largeur */
+}
+#loadMoreBtn:hover:not(:disabled) {
+    background-color: var(--text-primary);
+}
+
+/* Bouton Settings */
+#toggleConfigBtn {
+    position: absolute; /* Par rapport à #sidebar */
+    bottom: 15px;
+    right: 15px;
+    width: 45px; /* Carré */
+    height: 45px;
+    padding: 0;
+    border-radius: 50%;
+    background-color: var(--text-secondary);
+    color: var(--text-white);
+    box-shadow: var(--box-shadow-medium);
+    z-index: 15;
+}
+#toggleConfigBtn:hover {
+    background-color: var(--text-primary);
+}
+#toggleConfigBtn i {
+    font-size: 1.2em;
+}
+
+button:disabled {
+    background-color: #D1D5DB !important; /* Gris clair désactivé */
+    color: #9CA3AF !important;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+}
+button .spinner {
+    display: none;
+}
+button.loading .spinner {
+    display: inline-block;
+    width: var(--spinner-size);
+    height: var(--spinner-size);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: var(--text-white);
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* --- Panneaux POI et Résultats --- */
+#poiPanel,
+#resultsPanel {
+    border-top: 1px solid var(--border-color);
+    padding-top: 20px;
+    margin-top: 25px;
+}
+
+/* --- Filtres POI --- */
+#poiFilters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 15px;
+    margin-bottom: 15px;
+}
+#poiFilters label {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 0;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+#poiFilters input[type="checkbox"] {
+    width: 1em;
+    height: 1em;
+    margin-right: 6px;
+    vertical-align: middle;
+    accent-color: var(--color-primary);
+}
+#poiFilters label:hover {
+    color: var(--text-primary);
+}
+
+#showPoiToggle {
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
+#showPoiToggle label {
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    color: var(--text-secondary);
+}
+#showPoiToggle input {
+    width: auto;
+    margin-right: 6px;
+    accent-color: var(--color-primary);
+}
+
+/* --- Liste POI --- */
+#poiList {
+    max-height: 350px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-top: 10px;
+    padding: 8px;
+    background-color: var(--bg-input);
+}
+.poi-item {
+    margin-bottom: 6px;
+    cursor: pointer;
+    padding: 10px 12px;
+    border: 1px solid transparent;
+    border-radius: var(--border-radius);
+    font-size: 0.95rem;
+    background-color: var(--bg-input);
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    line-height: 1.3;
+}
+.poi-item:hover {
+    background-color: var(--bg-hover-light);
+}
+.poi-item.selected {
+    background-color: var(--bg-selected-light);
+    border-color: var(--border-selected);
+    font-weight: 500;
+    color: var(--color-secondary-dark);
+}
+
+/* --- Compteur POI --- */
+#poiCount {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-left: 5px;
+}
+
+/* --- Panneau Résultats --- */
+#routeSummary {
+    margin-top: 10px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+#routeInstructions {
+    margin-top: 15px;
+}
+#routeInstructions h4 {
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+#routeInstructions ol {
+    padding-left: 25px;
+    font-size: 0.95rem;
+    margin: 0;
+    list-style: decimal;
+}
+#routeInstructions li {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+#routeInstructions li strong {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* --- NOUVEAU: Styles pour Affichage Météo --- */
+#weatherDisplay {
+    margin-top: 20px; /* Espace avant la météo */
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+#weatherDisplay h5 { /* Petit titre pour la section météo */
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+}
+.weather-location {
+    margin-bottom: 12px;
+    padding: 10px;
+    border-radius: var(--border-radius);
+    background-color: var(--bg-hover-light); /* Fond légèrement différent */
+    border: 1px solid var(--border-color);
+}
+.weather-location strong {
+    color: var(--text-primary);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 5px;
+}
+.weather-details {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Espace entre icône, temp, desc */
+    flex-wrap: wrap; /* Pour petits écrans si nécessaire */
+}
+.weather-details img { /* Style pour icône OWM */
+    width: 35px;
+    height: 35px;
+    vertical-align: middle;
+}
+.weather-details span {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px; /* Espace entre icône FA et texte */
+}
+.weather-details i {
+    color: var(--color-info); /* Couleur icône FA */
+    width: 1.1em;
+    text-align: center;
+}
+/* --- Fin Styles Météo --- */
+
+
+/* --- Messages Status --- */
+.error,
+.success,
+.info,
+.loading,
+.warning {
+    padding: 10px 12px;
+    border-radius: var(--border-radius);
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    border: 1px solid transparent;
+}
+.error {
+    color: #991B1B;
+    background-color: var(--color-danger-light);
+    border-color: #FCA5A5;
+    font-weight: 500;
+}
+.success {
+    color: #065F46;
+    background-color: var(--bg-selected-light);
+    border-color: #6EE7B7;
+    font-weight: 500;
+}
+.info {
+    color: #1E40AF;
+    background-color: #DBEAFE;
+    border-color: #93C5FD;
+    font-weight: normal;
+}
+.warning {
+    color: #92400E;
+    background-color: var(--color-warning-light);
+    border-color: #FCD34D;
+    font-weight: 500;
+}
+.loading {
+    color: var(--text-secondary);
+    font-style: italic;
+    background-color: transparent;
+    border: none;
+    padding: 5px 0;
+}
+
+/* --- Panneau Configuration --- */
+#configPanel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-config-panel);
+    backdrop-filter: blur(3px);
+    padding: 20px;
+    border-right: 1px solid var(--border-color);
+    box-shadow: var(--box-shadow-large);
+    overflow-y: auto;
+    z-index: 20;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+}
+#configPanel.visible {
+    transform: translateX(0);
+}
+#configPanel h4 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#closeConfigBtn {
+    width: auto;
+    padding: 5px 10px;
+    font-size: 0.9rem;
+    background-color: var(--bg-hover-light);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    margin: 0;
+}
+#closeConfigBtn:hover {
+    background-color: var(--border-color);
+    color: var(--text-primary);
+}
+#closeConfigBtn i {
+    margin-right: 5px;
+}
+
+#configPanel label {
+    font-size: 0.85rem;
+    margin-bottom: 4px;
+}
+#configPanel input[type="text"],
+#configPanel input[type="password"],
+#configPanel input[type="number"] {
+    margin-bottom: 12px;
+    padding: 8px 10px;
+    font-size: 0.95rem;
+}
+#configPanel .input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+#configPanel .input-group > div {
+    flex: 1;
+}
+#configPanel .input-group label {
+    display: block;
+}
+#configPanel .input-group input {
+    margin-bottom: 0;
+}
+
+#saveConfigBtn {
+    background-color: var(--color-primary);
+    color: var(--text-white);
+    margin-top: 20px;
+}
+#saveConfigBtn:hover {
+    background-color: var(--color-primary-dark);
+}
+#configStatus {
+    margin-top: 15px;
+}
+
+/* --- Styles Leaflet --- */
+.leaflet-container {
+    font-family: var(--font-main);
+    font-size: 14px;
+}
+.leaflet-popup-content-wrapper {
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-medium);
+    background-color: var(--bg-sidebar);
+}
+.leaflet-popup-content {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+    margin: 12px 15px;
+    max-width: 250px;
+    word-wrap: break-word;
+}
+.leaflet-popup-content b {
+    font-weight: 600;
+}
+.leaflet-popup-content small {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    display: block;
+    margin-top: 4px;
+}
+.leaflet-popup-close-button {
+    color: var(--text-secondary) !important;
+    padding: 8px 8px 0 0 !important;
+}
