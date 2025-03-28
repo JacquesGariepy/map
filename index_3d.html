@@ -384,21 +384,85 @@
                 console.log("BBox Calculée:", bbox); return bbox;
             } catch (error) { console.error("Erreur calcul BBox:", error); throw error; }
          }
+        /** Génère une requête Overpass QL via l'IA Gemini (Prompt renforcé) */
         async function generateOverpassQueryFromAI(interests, boundingBox) {
-            if (!boundingBox || typeof boundingBox.south !== 'number') throw new Error("BBox invalide pour IA.");
-            const bboxString = `${boundingBox.south.toFixed(6)},${boundingBox.west.toFixed(6)},${boundingBox.north.toFixed(6)},${boundingBox.east.toFixed(6)}`;
-            const prompt = `Tu es expert Overpass QL. Génère requête pour POIs pertinents: "${interests}" dans bbox ${bboxString}. Instructions: [out:json][timeout:${OVERPASS_TIMEOUT}];( clause(${bboxString}); ... );out center;. Tags variés. Pas de regex '~' sur valeurs. QUE la requête brute. Requête:`;
-            console.log("Envoi prompt à Gemini pour Overpass Query...");
-            try {
-                const response = await fetch(GEMINI_API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({contents: [{parts: [{text: prompt}]}], generationConfig: {temperature: 0.2, topP: 0.95}})});
-                if (!response.ok) { let e=`Erreur API Gemini ${response.status}`; try{e+=`: ${(await response.json())?.error?.message||response.statusText}`}catch{} throw new Error(e); }
-                const data = await response.json(); const q = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (!q) { console.error("Réponse Gemini invalide:", data); throw new Error("Structure réponse IA invalide (Query)."); }
-                const cq = q.replace(/```(ql|overpass)?\s*|\s*```/g, '').trim();
-                if (!cq.startsWith('[out:json]') || !cq.includes(bboxString) || !cq.endsWith('out center;')) { console.error("Query générée invalide:", cq); throw new Error("Format query IA incorrect."); }
-                console.log("Requête Overpass générée:\n", cq); return cq;
-            } catch (error) { console.error("Erreur appel IA (Query):", error); showErrorInOverlay(`Erreur IA Query Gen: ${error.message}`); throw error; }
-         }
+             if (!boundingBox || typeof boundingBox.south !== 'number') {
+                 throw new Error("BBox invalide pour IA.");
+             }
+             // Bbox string SANS les parenthèses autour
+             const bboxString = `${boundingBox.south.toFixed(6)},${boundingBox.west.toFixed(6)},${boundingBox.north.toFixed(6)},${boundingBox.east.toFixed(6)}`;
+
+             // --- PROMPT DÉTAILLÉ POUR GEMINI (INTERDICTION REGEX) ---
+             const prompt = `
+                 Tu es un expert mondial en données OpenStreetMap (OSM) et dans le langage de requête Overpass QL.
+                 L'utilisateur souhaite planifier un itinéraire et a décrit ses intérêts.
+                 Ta tâche est de générer une requête Overpass QL complète et optimisée pour trouver des points d'intérêt (POI) pertinents (nodes, ways, relations) dans une zone géographique donnée.
+
+                 Intérêts de l'utilisateur: "${interests}"
+
+                 Zone géographique (bounding box au format south, west, north, east): ${bboxString}
+
+                 Instructions pour la requête Overpass QL:
+                 1.  **Format de Sortie Obligatoire:** Commence par \`[out:json][timeout:${OVERPASS_TIMEOUT}];\` et termine par \`out center;\`.
+                 2.  **Application de la Zone:** Applique le bounding box \`${bboxString}\` DIRECTEMENT après le tag/filtre, SANS parenthèses supplémentaires autour des coordonnées. Syntaxe CORRECTE : \`type[tag](south,west,north,east);\`. Exemple: \`node["amenity"="restaurant"](${bboxString});\`.
+                 3.  **Pertinence des Tags:** Traduis les 'intérêts' en tags OSM pertinents. Concentre-toi sur :
+                     * **Vues/Paysages:** \`tourism=viewpoint\`, \`natural=peak\`, \`man_made=lighthouse\`, zones \`natural=wood\`, \`natural=water\`, \`natural=heath\`, \`natural=grassland\`.
+                     * **Parcs/Nature:** \`leisure=park\`, \`leisure=nature_reserve\`, \`boundary=national_park\`, \`boundary=protected_area\`, \`leisure=garden\`.
+                     * **Terroir/Marchés:** \`amenity=marketplace\`, \`shop=farm\`, \`shop=deli\`, \`shop=cheese\`, \`shop=wine\`, \`craft=brewery\`, \`craft=pottery\`.
+                     * **Oiseaux/Faune:** \`leisure=bird_hide\`, \`tourism=attraction[attraction=animal]\`, zones \`natural=wetland\`.
+                     * **Histoire/Culture:** \`historic=*\` (castle, ruins, monument, archaeological_site), \`tourism=museum\`, \`tourism=attraction\`, \`amenity=theatre\`, \`amenity=arts_centre\`.
+                     * **Eau/Plages:** \`natural=water\`, \`natural=coastline\`, \`natural=beach\`, \`natural=spring\`, \`waterway=waterfall\`.
+                     * **Villages:** Chercher \`place=village\` ou \`place=hamlet\` et inclure les éléments historiques/touristiques à l'intérieur.
+                 4.  **Structure de la Requête:** Utilise une union \`( ... );\` pour regrouper les différentes recherches. Exemple: \`( node["tourism"="viewpoint"](${bboxString}); way["leisure"="park"](${bboxString}); );\`. Point-virgule sépare chaque clause DANS l'union.
+                 5.  **Performance:** Cible les tags spécifiques. Évite les requêtes trop génériques. Utilise \`node\`, \`way\` de manière appropriée. Ne cherche pas \`relation\` sauf pour \`boundary=*\` si pertinent.
+                 6.  **Nommage implicite:** Choisis des tags qui ont souvent un \`name\`.
+                 7.  **Syntaxe Strict des Filtres:** Utilise **UNIQUEMENT** des correspondances exactes avec '=' (ex: \`["amenity"="restaurant"]\`) ou des vérifications d'existence de clé (ex: \`["historic"]\`). **N'utilise JAMAIS l'opérateur regex '~'**.
+                 8.  **Sortie Brute:** Ne génère QUE la requête Overpass QL. Pas de commentaires, pas d'explications, pas de formatage Markdown (\`\`\`).
+
+                 Requête Overpass QL générée:
+             `;
+             // --- FIN DU PROMPT ---
+
+             try {
+                 console.log("Prompt Gemini (Query Gen) avec BBox:", bboxString);
+                 // console.log("Prompt envoyé:", prompt); // Décommenter pour vérifier le prompt complet
+                 const response = await fetch(GEMINI_API_URL, {
+                     method: 'POST', headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.3, topP: 0.95 } })
+                 });
+                 if (!response.ok) {
+                     let errorMsg = `Erreur API Gemini (${response.status}) Query Gen.`; try { errorMsg += ` Détail: ${(await response.json())?.error?.message || response.statusText}`; } catch(e){} throw new Error(errorMsg);
+                 }
+                 const data = await response.json();
+                 // console.log("Réponse brute Gemini:", JSON.stringify(data)); // Pour débugger la réponse
+                 if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                     console.error("Réponse Gemini (Query Gen) inattendue:", JSON.stringify(data)); throw new Error("Structure réponse IA inattendue (Query Gen).");
+                 }
+                 const generatedQuery = data.candidates[0].content.parts[0].text;
+
+                 // Nettoyage et Validation
+                 const cleanedQuery = generatedQuery.replace(/```(ql|overpass)?\s*|\s*```/g, '').trim();
+                 if (!cleanedQuery.startsWith('[out:json]') || !cleanedQuery.includes('out center;')) {
+                     console.error("Requête générée invalide ou vide:", cleanedQuery);
+                     if (cleanedQuery.length < 50 && cleanedQuery.toLowerCase().includes("prompt")) {
+                         throw new Error("L'IA a répondu au lieu de générer la requête (vérifiez le prompt envoyé).");
+                     } else {
+                         throw new Error("L'IA n'a pas généré une requête Overpass QL valide (format incorrect).");
+                     }
+                 }
+                 // Vérification supplémentaire: absence de l'opérateur ~
+                 if (cleanedQuery.includes('~')) {
+                      console.error("Erreur critique: L'IA a utilisé l'opérateur interdit '~' !", cleanedQuery);
+                      throw new Error("Erreur de syntaxe générée par l'IA (opérateur '~' interdit utilisé).");
+                 }
+
+                 console.log("Requête Overpass générée par IA (nettoyée):", cleanedQuery);
+                 return cleanedQuery;
+             } catch (error) {
+                 console.error("Erreur appel IA (Query Gen):", error);
+                 throw new Error(`Génération requête IA échouée: ${error.message}`);
+             }
+        }
         async function fetchPoisFromOverpass(generatedQueryString) {
              if (!generatedQueryString) return [];
             console.log("Exécution requête Overpass..."); showLoadingOverlay(true, "Recherche POI (Overpass)...");
